@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CloudMeeting</string>
+
+    <string name="loading_press">正在网络请求中...</string>
+</resources>

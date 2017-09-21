@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/img_menu_bg"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:id="@+id/tvSpeak"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:drawableTop="@mipmap/img_meeting_order_speak"
+            android:gravity="center"
+            android:text="指定发言"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/tvInvite"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:drawableTop="@mipmap/img_meeting_add_people"
+            android:gravity="center"
+            android:text="邀请"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/tvShare"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:drawableTop="@mipmap/img_meeting_file"
+            android:gravity="center"
+            android:text="会议材料"
+            android:textColor="#fff" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:id="@+id/tvExit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:drawableTop="@mipmap/img_meeting_shrink"
+            android:gravity="center"
+            android:text="退出全屏"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/tvPwd"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:drawableTop="@mipmap/img_meeting_password"
+            android:gravity="center"
+            android:text="会议密码"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/tvMaterial"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:drawableTop="@mipmap/img_meeting_file"
+            android:gravity="center"
+            android:text="会议材料"
+            android:textColor="#fff"
+            android:visibility="invisible" />
+    </LinearLayout>
+
+</LinearLayout>
