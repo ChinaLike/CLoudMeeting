@@ -13,15 +13,14 @@
         android:layout_height="40dp"
         android:layout_alignParentRight="true"
         android:layout_margin="10dp"
-        android:src="@drawable/img_meeting_transcribe"
-        android:visibility="gone" />
+        android:src="@drawable/img_meeting_camera_open" />
 
     <ImageView
         android:id="@+id/meeting_camera"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_alignParentRight="true"
         android:layout_margin="10dp"
+        android:layout_toLeftOf="@id/meeting_transcribe"
         android:src="@drawable/img_meeting_camera" />
 
     <ImageView

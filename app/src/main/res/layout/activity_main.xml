@@ -12,7 +12,7 @@
         android:id="@+id/user_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="张琪_阿里"
+        android:text="张琪_阿里洛桑旦增_阿里"
         android:hint="请输入用户名"
         android:textColorHint="#CCC" />
 
@@ -20,7 +20,7 @@
         android:id="@+id/room_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="3317"
+        android:text="111"
         android:layout_marginTop="10dp"
         android:hint="请输入房间ID"
         android:textColorHint="#CCC" />

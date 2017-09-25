@@ -70,9 +70,9 @@ public class MainActivity extends AppCompatActivity {
                 bean.setMeetingId("6ad9f56e355e46c9b345c34ec157607b");
                 bean.setFeedUserName(userName.getText().toString());
                 //c254e80bae1247c499a08cb2807e447d     1656380ecc41483483f39bd5cd5de1d2
-                bean.setFeedId("1656380ecc41483483f39bd5cd5de1d2");
-                bean.setInitiator("4ae8faff7913469688c46bca814a965e");
-                bean.setCreated_by("4ae8faff7913469688c46bca814a965e");
+                bean.setFeedId("c254e80bae1247c499a08cb2807e447d");
+                bean.setInitiator("c254e80bae1247c499a08cb2807e447d");
+                bean.setCreated_by("c254e80bae1247c499a08cb2807e447d");
                 bean.setIsBroadcastMode("0");
                 Intent intent = new Intent(MainActivity.this, CommonActivity.class);
                 intent.putExtra(Key.JS_PARAMS, bean);

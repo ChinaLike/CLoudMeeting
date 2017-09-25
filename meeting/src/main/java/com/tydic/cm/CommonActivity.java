@@ -575,7 +575,16 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             case Key.ON_LINE_USER:
                 //获取在线人员列表
                 L.d(TAG, "在线人员列表：" + obj.toString());
-                onLineUsers = (List<UsersBean>) obj;
+                // onLineUsers = (List<UsersBean>) obj;
+                List<UsersBean> objList = (List<UsersBean>) obj;
+                int size = objList.size();
+                onLineUsers.clear();
+                //只有状态值为2的才显示摄像头
+                for (int i = 0; i < size; i++) {
+                    if (objList.get(i).getVideoStatus().equals("2")) {
+                        onLineUsers.add(objList.get(i));
+                    }
+                }
                 break;
             case Key.SEND_MESSAGE:
                 //发送消息
@@ -601,18 +610,19 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 if (isOpenCamera) {
                     //执行关闭摄像头
                     userState.setDisplayMode(1);
-                    displayMode = 1;
+                    videoState = "1";
                     feedbackState(Key.UPDATE_CLIENT_STATUS);
                     cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
-                    AnyChatCoreSDK.getInstance(this).UserCameraControl(-1, 0);
+                    anychat.UserCameraControl(-1, 0);
                 } else {
                     //执行打开摄像头
                     userState.setDisplayMode(2);
-                    displayMode = 2;
+                    videoState = "2";
                     feedbackState(Key.UPDATE_CLIENT_STATUS);
                     cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
-                    AnyChatCoreSDK.getInstance(this).UserCameraControl(-1, 1);
+                    anychat.UserCameraControl(-1, 1);
                 }
+                mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
                 isOpenCamera = !isOpenCamera;
             } else {
                 //没有摄像头
@@ -678,5 +688,15 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             default:
                 break;
         }
+    }
+
+    @Override
+    public void OnAnyChatUserInfoUpdate(int dwUserId, int dwType) {
+        L.d(TAG,"OnAnyChatUserInfoUpdate:dwUserId="+dwUserId+",dwType="+dwType);
+    }
+
+    @Override
+    public void OnAnyChatFriendStatus(int dwUserId, int dwStatus) {
+        L.d(TAG,"OnAnyChatFriendStatus:dwUserId="+dwUserId+",dwStatus="+dwStatus);
     }
 }

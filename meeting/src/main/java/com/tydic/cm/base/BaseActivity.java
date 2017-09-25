@@ -13,6 +13,7 @@ import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.bairuitech.anychat.AnyChatObjectEvent;
 import com.bairuitech.anychat.AnyChatTransDataEvent;
+import com.bairuitech.anychat.AnyChatUserInfoEvent;
 import com.bairuitech.anychat.AnyChatVideoCallEvent;
 import com.google.gson.Gson;
 import com.tydic.cm.bean.JsParamsBean;
@@ -34,7 +35,8 @@ import java.util.Map;
  */
 
 public abstract class BaseActivity extends AppCompatActivity implements AnyChatInit.LoginCallBack ,
-        OnRequestListener,AnyChatBaseEvent,AnyChatObjectEvent,AnyChatVideoCallEvent, AnyChatTransDataEvent {
+        OnRequestListener,AnyChatBaseEvent,AnyChatObjectEvent,AnyChatVideoCallEvent, AnyChatTransDataEvent ,
+        AnyChatUserInfoEvent{
 
     protected static final String TAG = "视频会议";
 
@@ -164,6 +166,7 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         anychat.SetObjectEvent(this);//排队事件接口；
         anychat.SetTransDataEvent(this);
         anychat.SetVideoCallEvent(this);
+        anychat.SetUserInfoEvent(this);
     }
 
     /**
@@ -239,6 +242,16 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
     @Override
     public void OnAnyChatVideoCallEvent(int dwEventType, int dwUserId, int dwErrorCode, int dwFlags, int dwParam, String userStr) {
+
+    }
+
+    @Override
+    public void OnAnyChatUserInfoUpdate(int dwUserId, int dwType) {
+
+    }
+
+    @Override
+    public void OnAnyChatFriendStatus(int dwUserId, int dwStatus) {
 
     }
 
