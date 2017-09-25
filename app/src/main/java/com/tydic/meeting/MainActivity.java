@@ -6,10 +6,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 
-import com.tydic.cloudmeeting.CommonActivity;
-import com.tydic.cloudmeeting.bean.JsParamsBean;
-import com.tydic.cloudmeeting.constant.Key;
-import com.tydic.cloudmeeting.util.CacheUtil;
+import com.tydic.cm.CommonActivity;
+import com.tydic.cm.bean.JsParamsBean;
+import com.tydic.cm.constant.Key;
+import com.tydic.cm.util.CacheUtil;
 
 public class MainActivity extends AppCompatActivity {
 

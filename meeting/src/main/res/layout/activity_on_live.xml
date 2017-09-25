@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:id="@+id/rootview"
     android:background="#000000"
-    tools:context="com.tydic.cloudmeeting.OnLiveActivity">
+    tools:context="com.tydic.cm.OnLiveActivity">
 
     <ImageView
         android:id="@+id/hint_image"
