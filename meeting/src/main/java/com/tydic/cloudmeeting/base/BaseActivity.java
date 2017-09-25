@@ -71,9 +71,9 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
     protected String anyChatUserId;
 
-    private String micState = "1";
-    private String videoState = "2";
-    private int displayMode = 1;
+    protected String micState = "1";
+    protected String videoState = "2";
+    protected int displayMode = 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

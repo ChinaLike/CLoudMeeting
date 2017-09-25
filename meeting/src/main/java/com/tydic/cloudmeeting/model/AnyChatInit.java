@@ -303,11 +303,21 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
 
     /**
      * 根据配置文件配置视频参数
+
      */
-    private void ApplyVideoConfig() {
+    private void ApplyVideoConfig(){
+        ApplyVideoConfig(960,540);
+    }
+
+    /**
+     * 根据配置文件配置视频参数
+     * @param width 视频采集的宽
+     * @param height    视频采集的高
+     */
+    private void ApplyVideoConfig(int width,int height) {
         ConfigEntity configEntity = ConfigService.LoadConfig(mContext);
         // 自定义视频参数配置
-        if (configEntity.configMode == 1) {
+       if (configEntity.configMode == 1) {
             // 设置本地视频编码的码率（如果码率为0，则表示使用质量优先模式）
             AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_BITRATECTRL, configEntity.videoBitrate);
             if (configEntity.videoBitrate == 0) {
@@ -319,8 +329,8 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
             // 设置本地视频编码的关键帧间隔
             AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_GOPCTRL, configEntity.videoFps * 4);
             // 设置本地视频采集分辨率
-            AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_WIDTHCTRL, 640); //configEntity.resolution_width
-            AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_HEIGHTCTRL, 480); //configEntity.resolution_height
+            AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_WIDTHCTRL, width); //configEntity.resolution_width
+            AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_HEIGHTCTRL, height); //configEntity.resolution_height
             // 设置视频编码预设参数（值越大，编码质量越高，占用CPU资源也会越高）
             AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_PRESETCTRL, configEntity.videoPreset);
         }

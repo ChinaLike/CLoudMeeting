@@ -1,6 +1,5 @@
 package com.tydic.cloudmeeting;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.SurfaceView;
@@ -48,7 +47,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     boolean isSpeaking = true;//是否可以说话
 
-    boolean isSound = false;//是否有声音
+    boolean isSound = true;//是否有声音
 
     boolean isOpenCamera = true;
 
@@ -62,6 +61,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     protected void init(@Nullable Bundle savedInstanceState) {
         meetingMenuPop = new MeetingMenuPop(mContext, mJsParamsBean.getMeetingId(), mJsParamsBean.getCreated_by(), Integer.parseInt(mJsParamsBean.getIsBroadcastMode()));
         meetingMenuPop.setMenuClickListener(this);
+        mOnlinePop = new OnlinePop(this, mJsParamsBean);
+        mOnlinePop.onLineUser();
         initView();
         initSelfSurface();
     }
@@ -113,6 +114,14 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             surfaceViews[5] = surface6;
             surfaceViews[6] = surface7;
             surfaceViews[7] = surface8;
+            selfSurface.setVisibility(View.VISIBLE);
+            surface2.setVisibility(View.VISIBLE);
+            surface3.setVisibility(View.VISIBLE);
+            surface4.setVisibility(View.VISIBLE);
+            surface5.setVisibility(View.VISIBLE);
+            surface6.setVisibility(View.VISIBLE);
+            surface7.setVisibility(View.VISIBLE);
+            surface8.setVisibility(View.VISIBLE);
             return;
         }
         surfaceViews = new SurfaceView[size];
@@ -318,7 +327,12 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             int index = anychat.mVideoHelper.bindVideo(surfaceViews[i + 1].getHolder());
             anychat.mVideoHelper.SetVideoUser(index, userIDList.get(i));
             anychat.UserCameraControl(userIDList.get(i), 1);
-            anychat.UserSpeakControl(userIDList.get(i), 1);
+            //解决在关闭远程声音下有人进出房间时又能听见远程声音
+            if (isSound) {
+                anychat.UserSpeakControl(userIDList.get(i), 1);
+            } else {
+                anychat.UserSpeakControl(userIDList.get(i), 0);
+            }
         }
 
     }
@@ -333,9 +347,10 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     public void OnAnyChatTransBuffer(int dwUserid, byte[] lpBuf, int dwLen) {
         try {
             String receiveMsg = new String(lpBuf, "utf-8");
+            L.d(TAG, "OnAnyChatTransBuffer:lpBuf=" + receiveMsg + ",dwLen=" + dwLen);
             //获取用户状态
             mRetrofitMo.userState(mJsParamsBean.getRoomId(), mJsParamsBean.getFeedId(), this);
-            feedbackState(Key.UPDATE_CLIENT_STATUS);
+
             if (receiveMsg.contains(" ")) {
                 return;
             } else {
@@ -364,7 +379,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         break;
                 }
             }
-
+            feedbackState(Key.UPDATE_CLIENT_STATUS);
             if (mOnlinePop != null && mOnlinePop.isShowing()) {
                 mOnlinePop.onLineUser();
             }
@@ -449,7 +464,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             for (int i = 0; i < onlineUserCount.length; i++) {
                 userIDList.add(onlineUserCount[i]);
             }
-            //加1是加自身
             showSurface(userIDList.size());
             initNetSurface();
 
@@ -534,10 +548,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 //获取用户状态
                 userState = (UsersBean) obj;
                 L.d(TAG, "用户状态：" + userState.toString());
-                //初始化侧边弹窗
-                if (mOnlinePop == null) {
-                    mOnlinePop = new OnlinePop(this, userState.getUserId(), mJsParamsBean.getRoomId(), mJsParamsBean.getCreated_by(), mJsParamsBean.getInitiator());
-                }
                 break;
             case Key.ON_LINE_USER:
                 //获取在线人员列表
@@ -572,19 +582,21 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             //本地声音
             if (isSpeaking) {
                 userState.setAudioStatus("0");
+                micState = "0";
                 feedbackState(Key.UPDATE_CLIENT_STATUS);
                 microphone.setImageResource(R.drawable.meeting_microphone_disable);
                 AnyChatCoreSDK.getInstance(this).UserSpeakControl(-1, 0);
 
-                String mReleaseMic = anyChatUserId + "|0";
-                AnyChatCoreSDK.getInstance(this).TransBuffer(0, mReleaseMic.getBytes(), mReleaseMic.length());
+//                String mReleaseMic = anyChatUserId + "|0";
+//                AnyChatCoreSDK.getInstance(this).TransBuffer(0, mReleaseMic.getBytes(), mReleaseMic.length());
             } else {
                 microphone.setImageResource(R.drawable.img_meeting_microphone);
                 userState.setAudioStatus("1");
+                micState = "1";
                 feedbackState(Key.UPDATE_CLIENT_STATUS);
-                String mRequestMic = anyChatUserId + "|1";
+//                String mRequestMic = anyChatUserId + "|1";
                 AnyChatCoreSDK.getInstance(this).UserSpeakControl(-1, 1);
-                AnyChatCoreSDK.getInstance(this).TransBuffer(0, mRequestMic.getBytes(), mRequestMic.length());
+//                AnyChatCoreSDK.getInstance(this).TransBuffer(0, mRequestMic.getBytes(), mRequestMic.length());
             }
             isSpeaking = !isSpeaking;
         } else if (id == R.id.meeting_sound) {
@@ -592,14 +604,14 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             int[] onlineUserCount = AnyChatCoreSDK.getInstance(this).GetOnlineUser();
             int size = onlineUserCount.length;
             if (isSound) {
-                sound.setImageResource(R.drawable.img_meeting_sound);
-                for (int i = 0; i < size; i++) {
-                    anychat.UserSpeakControl(onlineUserCount[i], 1);
-                }
-            } else {
                 sound.setImageResource(R.drawable.meeting_speaker_disable);
                 for (int i = 0; i < size; i++) {
                     anychat.UserSpeakControl(onlineUserCount[i], 0);
+                }
+            } else {
+                sound.setImageResource(R.drawable.img_meeting_sound);
+                for (int i = 0; i < size; i++) {
+                    anychat.UserSpeakControl(onlineUserCount[i], 1);
                 }
             }
             isSound = !isSound;

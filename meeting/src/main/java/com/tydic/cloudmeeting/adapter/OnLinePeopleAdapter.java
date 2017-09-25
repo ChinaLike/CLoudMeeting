@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.tydic.cloudmeeting.R;
+import com.tydic.cloudmeeting.bean.JsParamsBean;
 import com.tydic.cloudmeeting.bean.UsersBean;
 import com.tydic.cloudmeeting.constant.Key;
 import com.tydic.cloudmeeting.model.RetrofitMo;
@@ -32,12 +33,8 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
 
     //会议发起人或者创建者才有操作权
     private boolean canCtrl = false;
-    //用户ID
-    private String userId;
-    //创建者ID
-    private String created_by;
-    //发起人
-    private String initiator;
+
+    private JsParamsBean bean;//RN传递过来的数据
 
     private RetrofitMo mRetrofitMo;
 
@@ -48,6 +45,15 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
         this.mList = mList;
         mRetrofitMo = new RetrofitMo(mContext);
         progressDialog = new ECProgressDialog(mContext);
+    }
+
+    public void setBean(JsParamsBean bean) {
+        if (bean.getFeedId().equals(bean.getCreated_by()) || bean.getFeedId().equals(bean.getInitiator())) {
+            canCtrl = true;
+        } else {
+            canCtrl = false;
+        }
+        this.bean = bean;
     }
 
     @Override
@@ -127,7 +133,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
             holder.tvSpeaker.setText("主讲人");
         }
 
-        if (!(userId.equals(created_by) || userId.equals(initiator))) {
+        if (!canCtrl) {
             holder.tvSpeak.setVisibility(View.GONE);
             holder.tvVideo.setVisibility(View.GONE);
             holder.tvSpeaker.setVisibility(View.GONE);
@@ -147,15 +153,16 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
     @Override
     public void onSuccess(int type, Object obj) {
         UsersBean dataBean = (UsersBean) obj;
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
         if (type == 0) {
             if ("1".equals(dataBean.getAudioStatus())) {
                 dataBean.setAudioStatus("0");
             } else {
                 dataBean.setAudioStatus("1");
             }
-            if (mList != null && mList.size() > 1) {
-                notifyDataSetChanged();
-            }
+            notifyDataSetChanged();
         } else if (type == 1) {
             if ("2".equals(dataBean.getVideoStatus())) {
                 dataBean.setVideoStatus("1");
@@ -175,10 +182,9 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
 
     @Override
     public void onError(int type, int code) {
-        if (progressDialog != null) {
+        if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
-
     }
 
     class OnLinePeopleViewHolder extends RecyclerView.ViewHolder {
@@ -196,39 +202,17 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
         }
     }
 
-    public void setCanCtrl(boolean canCtrl) {
-        this.canCtrl = canCtrl;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void setCreated_by(String created_by) {
-        this.created_by = created_by;
-    }
-
-    public void setInitiator(String initiator) {
-        this.initiator = initiator;
-    }
-
     /**
      * 麦克风控制
      *
      * @param position
      */
     private void sendMicMsg(int position) {
-        if (progressDialog == null) {
-            progressDialog = new ECProgressDialog(mContext);
-        }
-        progressDialog.setPressText("加载中...");
-        progressDialog.setCancelable(true);
-        progressDialog.show();
+        showDialog();
         String userId, character;
         UsersBean dataBean = mList.get(position);
         if ("1".equals(dataBean.getAudioStatus())) {
             character = Key.CLIENT_DISABLE_MIC + "";
-
         } else {
             character = Key.CLIENT_ENAble_MIC + "";
         }
@@ -242,12 +226,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
      * @param position
      */
     private void sendCameraMsg(int position) {
-        if (progressDialog == null) {
-            progressDialog = new ECProgressDialog(mContext);
-        }
-        progressDialog.setPressText("加载中...");
-        progressDialog.setCancelable(true);
-        progressDialog.show();
+        showDialog();
         String userId, character;
         UsersBean dataBean = mList.get(position);
         if ("2".equals(dataBean.getVideoStatus())) {
@@ -267,12 +246,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
      * @param position
      */
     private void sendSpeakerMsg(int position) {
-        if (progressDialog == null) {
-            progressDialog = new ECProgressDialog(mContext);
-        }
-        progressDialog.setPressText("加载中...");
-        progressDialog.setCancelable(true);
-        progressDialog.show();
+        showDialog();
         String userId, character;
         UsersBean dataBean = mList.get(position);
         if ("1".equals(dataBean.getIsPrimarySpeaker())) {
@@ -284,6 +258,18 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
         userId = mList.get(position).getUserId();
         mRetrofitMo.sendMsg(userId, character, dataBean, 2, this);
 
+    }
+
+    /**
+     * 显示弹窗
+     */
+    private void showDialog() {
+        if (progressDialog == null) {
+            progressDialog = new ECProgressDialog(mContext);
+        }
+        progressDialog.setPressText("加载中...");
+        progressDialog.setCancelable(true);
+        progressDialog.show();
     }
 
 }

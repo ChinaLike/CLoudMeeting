@@ -10,6 +10,7 @@ import com.tydic.cloudmeeting.CommonActivity;
 import com.tydic.cloudmeeting.OnLiveActivity;
 import com.tydic.cloudmeeting.bean.JsParamsBean;
 import com.tydic.cloudmeeting.constant.Key;
+import com.tydic.cloudmeeting.util.CacheUtil;
 import com.tydic.cloudmeeting.util.L;
 
 /**
@@ -35,6 +36,10 @@ public class JsAndroidModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void jsActivity(String empName, String passWord, String roomId, String meetingId, String feedId,
                            String initiator, String created_by, int isBroadcastMode) {
+
+        CacheUtil.get(getCurrentActivity()).put(Key.EMPNAME, empName);
+        CacheUtil.get(getCurrentActivity()).put(Key.PASSWORD, passWord);
+        CacheUtil.get(getCurrentActivity()).put(Key.USER_ID, feedId);
         JsParamsBean bean = new JsParamsBean();
         bean.setEmpName(empName);
         bean.setPassWord(passWord);

@@ -17,7 +17,6 @@ import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.tydic.cloudmeeting.R;
 import com.tydic.cloudmeeting.bean.SurfaceBean;
-import com.tydic.cloudmeeting.bean.UsersBean;
 import com.tydic.cloudmeeting.config.SurfaceConfig;
 
 import java.util.List;

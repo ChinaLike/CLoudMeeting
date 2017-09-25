@@ -45,6 +45,7 @@ public class ConfigEntity {
 
 
     public int configMode = VIDEO_MODE_SERVERCONFIG;
+//    public int configMode = 1;
     public int resolution_width = 0;
     public int resolution_height = 0;
 

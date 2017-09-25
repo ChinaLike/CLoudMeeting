@@ -12,31 +12,18 @@
         android:id="@+id/user_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="张琪_阿里"
         android:hint="请输入用户名"
         android:textColorHint="#CCC" />
 
     <EditText
-        android:id="@+id/passworrd"
+        android:id="@+id/room_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="3317"
         android:layout_marginTop="10dp"
-        android:hint="请输入密码"
+        android:hint="请输入房间ID"
         android:textColorHint="#CCC" />
-
-    <TextView
-        android:id="@+id/video"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="进入已有视频" />
-
-    <Button
-        android:id="@+id/login"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="登录" />
-
 
     <Button
         android:id="@+id/btn"

@@ -1,6 +1,5 @@
 package com.tydic.cloudmeeting;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.SurfaceView;
@@ -16,7 +15,9 @@ import com.tydic.cloudmeeting.bean.UsersBean;
 import com.tydic.cloudmeeting.constant.Key;
 import com.tydic.cloudmeeting.overwrite.MeetingMenuPop;
 import com.tydic.cloudmeeting.overwrite.OnlinePop;
+import com.tydic.cloudmeeting.util.L;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,8 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
         mRetrofitMo.userState(mJsParamsBean.getRoomId(),mJsParamsBean.getFeedId(),this);
         meetingMenuPop = new MeetingMenuPop(this,mJsParamsBean.getMeetingId(),mJsParamsBean.getCreated_by(),Integer.parseInt(mJsParamsBean.getIsBroadcastMode()));
         meetingMenuPop.setMenuClickListener(this);
+        mOnlinePop = new OnlinePop(this,mJsParamsBean);
+        mOnlinePop.onLineUser();
         initView();
         initSDK();
     }
@@ -165,11 +168,8 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
             usersBeanList = (List<UsersBean>) obj;
             initSpeaker();
         } else if (type == Key.USER_STATE) {
-            if (mOnlinePop == null) {
                 userState = (UsersBean) obj;
-                mOnlinePop = new OnlinePop(this,userState.getUserId(),mJsParamsBean.getRoomId(),mJsParamsBean.getCreated_by(),mJsParamsBean.getInitiator());
                 mOnlinePop.onLineUser();
-            }
         }
     }
 
@@ -180,11 +180,24 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
 
     @Override
     public void OnAnyChatTransBuffer(int dwUserid, byte[] lpBuf, int dwLen) {
+        try {
+            String receiveMsg = new String(lpBuf, "utf-8");
+            L.d(TAG, "OnAnyChatTransBuffer:lpBuf=" + receiveMsg + ",dwLen=" + dwLen);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 
     }
 
     @Override
     public void OnAnyChatSDKFilterData(byte[] lpBuf, int dwLen) {
+        try {
+            String receiveMsg = new String(lpBuf, "utf-8");
+            L.d(TAG, "OnAnyChatSDKFilterData:lpBuf=" + receiveMsg + ",dwLen=" + dwLen);
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 
     }
 

@@ -11,7 +11,6 @@ import android.util.AttributeSet;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;

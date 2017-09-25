@@ -1,7 +1,5 @@
 package com.tydic.cloudmeeting.bean;
 
-import com.tydic.cloudmeeting.constant.Key;
-
 import java.io.Serializable;
 
 /**

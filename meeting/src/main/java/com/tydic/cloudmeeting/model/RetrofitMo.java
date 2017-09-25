@@ -1,6 +1,7 @@
 package com.tydic.cloudmeeting.model;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.tydic.cloudmeeting.bean.BaseBean;
 import com.tydic.cloudmeeting.bean.UsersBean;
@@ -165,12 +166,15 @@ public class RetrofitMo {
             @Override
             public void onResponse(Call<BaseBean<String>> call, Response<BaseBean<String>> response) {
                 BaseBean<String> baseBean = response.body();
-                if (baseBean.getErrorCode().equals("1")) {
+                T.showShort(baseBean.getData());
+                if (!TextUtils.isEmpty(baseBean.getData())) {
                     if (listener != null) {
                         listener.onSuccess(type, usersBean);
                     }
                 } else {
-                    T.showShort(baseBean.getErrorMessage());
+                    if (listener != null) {
+                        listener.onError(type, 0);
+                    }
                 }
             }
 

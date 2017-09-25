@@ -107,43 +107,68 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
         });
     }
 
+    /**
+     * 是否直播模式
+     *
+     * @param isBroadcastMode
+     * @return
+     */
+    private boolean isBroadcast(int isBroadcastMode) {
+        if (isBroadcastMode == 1) {
+            Toast.makeText(mContext, "当前为会议直播模式,无法操作!", Toast.LENGTH_SHORT).show();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     @Override
     public void onClick(View view) {
         int id = view.getId();
         if (menuClickListener == null) {
             return;
         }
-        if (isBroadcastMode == 1) {
-            Toast.makeText(mContext, "当前为会议直播模式,无法操作!", Toast.LENGTH_SHORT).show();
-        } else {
-            if (id == R.id.tvSpeak) {
-                menuClickListener.onClick(0);
-            } else if (id == R.id.tvInvite) {
-                menuClickListener.onClick(1);
-                if (userId.equals(createdBy)) {
+
+        if (id == R.id.tvSpeak) {
+            menuClickListener.onClick(0);
+        } else if (id == R.id.tvInvite) {
+            if (isBroadcast(isBroadcastMode)) {
+                return;
+            }
+            menuClickListener.onClick(1);
+            if (userId.equals(createdBy)) {
 //                    Intent intent = new Intent();
 //                    intent.setAction("com.broadcast.meeting.broadcast");
 //                    intent.putExtra("data", "1");
 //                    mContext.sendBroadcast(intent, null);
-                    JsAndroidModule.sendEvent("InviteMeeting");
-                    ((Activity) mContext).finish();
-                } else {
-                    Toast.makeText(mContext, "你不是会议管理员，无法操作！", Toast.LENGTH_SHORT).show();
-                }
-            } else if (id == R.id.tvShare) {
-                menuClickListener.onClick(2);
+                JsAndroidModule.sendEvent("InviteMeeting");
+                ((Activity) mContext).finish();
+            } else {
+                Toast.makeText(mContext, "你不是会议管理员，无法操作！", Toast.LENGTH_SHORT).show();
+            }
+        } else if (id == R.id.tvShare) {
+            if (isBroadcast(isBroadcastMode)) {
+                return;
+            }
+            menuClickListener.onClick(2);
 //                Intent intent = new Intent();
 //                intent.setAction("com.broadcast.meeting.broadcast");
 //                intent.putExtra("data", "2");
 //                mContext.sendBroadcast(intent, null);
-                JsAndroidModule.sendEvent("MaterialMeeting");
-                ((Activity) mContext).finish();
-            } else if (id == R.id.tvPwd) {
-                menuClickListener.onClick(4);
-            } else if (id == R.id.tvMaterial) {
-                menuClickListener.onClick(5);
+            JsAndroidModule.sendEvent("MaterialMeeting");
+            ((Activity) mContext).finish();
+        } else if (id == R.id.tvPwd) {
+            if (isBroadcast(isBroadcastMode)) {
+                return;
             }
+            menuClickListener.onClick(4);
+        } else if (id == R.id.tvMaterial) {
+            if (isBroadcast(isBroadcastMode)) {
+                return;
+            }
+            menuClickListener.onClick(5);
         }
+
         if (id == R.id.tvExit) {
             menuClickListener.onClick(3);
         }

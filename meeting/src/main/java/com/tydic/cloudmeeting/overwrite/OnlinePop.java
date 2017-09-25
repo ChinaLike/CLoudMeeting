@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cloudmeeting.R;
 import com.tydic.cloudmeeting.adapter.OnLinePeopleAdapter;
+import com.tydic.cloudmeeting.bean.JsParamsBean;
 import com.tydic.cloudmeeting.bean.UsersBean;
 import com.tydic.cloudmeeting.constant.Key;
 import com.tydic.cloudmeeting.model.RetrofitMo;
@@ -38,15 +39,16 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
     private TextView tvNum;
 
     private RecyclerView recyclerView;
-    private int roomId;
     private List<UsersBean> list = new ArrayList<>();
     private OnLinePeopleAdapter adapter;
-    public static int PRIMARYUSERONLINE = 0;
+//    public static int PRIMARYUSERONLINE = 0;
 
     private RetrofitMo mRetrofitMo;//数据获取
 
-    public OnlinePop(Activity context, String userId, int roomId, String created_by, String initiator) {
-        this.roomId = roomId;
+    private JsParamsBean bean;//RN传递过来的数据
+
+    public OnlinePop(Activity context, JsParamsBean bean) {
+        this.bean = bean;
         // EventBus.getDefault().register(this);
         View view = LayoutInflater.from(context).inflate(R.layout.pop_online_list, null);
         setContentView(view);
@@ -66,16 +68,11 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
             setAnimationStyle(0);
         }
         adapter = new OnLinePeopleAdapter(context, list);
-        adapter.setUserId(userId);
-        adapter.setCreated_by(created_by);
-        adapter.setInitiator(initiator);
+        adapter.setBean(bean);
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-        if (userId.equals(created_by) || userId.equals(initiator)) {
-            adapter.setCanCtrl(true);
-        }
         onLineUser();
     }
 
@@ -84,7 +81,7 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
      */
     public void onLineUser() {
         if (mRetrofitMo != null) {
-            mRetrofitMo.onLineUsers(roomId, this);
+            mRetrofitMo.onLineUsers(bean.getRoomId(), this);
         }
     }
 
@@ -143,13 +140,13 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
     public void onSuccess(int type, Object obj) {
         if (type == Key.ON_LINE_USER) {
             List<UsersBean> mList = (List<UsersBean>) obj;
-            for (int i = 0; i < mList.size(); i++) {
-                if (mList.get(i).getIsPrimarySpeaker().equals("1")) {
-                    PRIMARYUSERONLINE = 0;
-                } else {
-                    PRIMARYUSERONLINE = 1;
-                }
-            }
+//            for (int i = 0; i < mList.size(); i++) {
+//                if (mList.get(i).getIsPrimarySpeaker().equals("1")) {
+//                    PRIMARYUSERONLINE = 0;
+//                } else {
+//                    PRIMARYUSERONLINE = 1;
+//                }
+//            }
             tvNum.setText("参会人员(" + mList.size() + ")");
             list.clear();
             list.addAll(mList);

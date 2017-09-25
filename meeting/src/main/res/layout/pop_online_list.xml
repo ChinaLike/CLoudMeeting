@@ -11,7 +11,7 @@
         android:id="@+id/tvNum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
+        android:layout_margin="10dp"
         android:drawableLeft="@mipmap/meeting_member"
         android:drawablePadding="10dp"
         android:textColor="#fff"
@@ -25,7 +25,6 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>
