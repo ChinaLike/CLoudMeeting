@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.tydic.cm.R;
@@ -13,6 +14,7 @@ import com.tydic.cm.bean.JsParamsBean;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
 import com.tydic.cm.model.RetrofitMo;
+import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnRequestListener;
 import com.tydic.cm.overwrite.ECProgressDialog;
 import com.tydic.cm.util.T;
@@ -34,11 +36,13 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
     //会议发起人或者创建者才有操作权
     private boolean canCtrl = false;
 
-    private JsParamsBean bean;//RN传递过来的数据
+    private JsParamsBean beanJs;//RN传递过来的数据
 
     private RetrofitMo mRetrofitMo;
 
     private ECProgressDialog progressDialog;
+
+    private OnItemClickListener onItemClickListener;
 
     public OnLinePeopleAdapter(Context mContext, List<UsersBean> mList) {
         this.mContext = mContext;
@@ -47,13 +51,17 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
         progressDialog = new ECProgressDialog(mContext);
     }
 
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
+
     public void setBean(JsParamsBean bean) {
         if (bean.getFeedId().equals(bean.getCreated_by()) || bean.getFeedId().equals(bean.getInitiator())) {
             canCtrl = true;
         } else {
             canCtrl = false;
         }
-        this.bean = bean;
+        this.beanJs = bean;
     }
 
     @Override
@@ -62,9 +70,17 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
     }
 
     @Override
-    public void onBindViewHolder(OnLinePeopleViewHolder holder, int position) {
+    public void onBindViewHolder(OnLinePeopleViewHolder holder, final int position) {
         final UsersBean bean = mList.get(position);
         holder.tvName.setText(bean.getNickName());
+        holder.parent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (beanJs.getIsBroadcastMode().equals("0") && onItemClickListener != null) {
+                    onItemClickListener.onItemClick(position, bean);
+                }
+            }
+        });
         holder.tvSpeak.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -191,6 +207,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
 
         ImageView iv;
         TextView tvName, tvSpeaker, tvVideo, tvSpeak;
+        LinearLayout parent;
 
         public OnLinePeopleViewHolder(View itemView) {
             super(itemView);
@@ -199,6 +216,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
             tvSpeaker = itemView.findViewById(R.id.tvSpeaker);
             tvVideo = itemView.findViewById(R.id.tvVideo);
             tvSpeak = itemView.findViewById(R.id.tvSpeak);
+            parent = itemView.findViewById(R.id.parent);
         }
     }
 

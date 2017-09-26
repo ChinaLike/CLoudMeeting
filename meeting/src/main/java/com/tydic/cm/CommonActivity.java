@@ -14,6 +14,9 @@ import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.base.BaseActivity;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
+import com.tydic.cm.model.inf.OnItemClickListener;
+import com.tydic.cm.model.inf.OnLocationListener;
+import com.tydic.cm.overwrite.LocationPop;
 import com.tydic.cm.overwrite.MeetingMenuPop;
 import com.tydic.cm.overwrite.OnlinePop;
 import com.tydic.cm.util.L;
@@ -28,7 +31,8 @@ import static com.tydic.cm.constant.Key.CLIENT_NOTICE_PRIMARY_SPEAKER;
 /**
  * 普通视频模式
  */
-public class CommonActivity extends BaseActivity implements View.OnClickListener, MeetingMenuPop.MenuClickListener {
+public class CommonActivity extends BaseActivity implements View.OnClickListener,
+        MeetingMenuPop.MenuClickListener, OnItemClickListener, OnLocationListener {
 
 
     private LinearLayout topLayout, bottomLayout;
@@ -59,12 +63,19 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     private List<UsersBean> onLineUsers = new ArrayList<>();
 
+    private LocationPop mLocationPop;
+    /**
+     * 界面显示网格数目
+     */
+    private int showNum = 4;
+
     @Override
     protected void init(@Nullable Bundle savedInstanceState) {
         meetingMenuPop = new MeetingMenuPop(mContext, mJsParamsBean.getMeetingId(), mJsParamsBean.getCreated_by(), Integer.parseInt(mJsParamsBean.getIsBroadcastMode()));
         meetingMenuPop.setMenuClickListener(this);
         mOnlinePop = new OnlinePop(this, mJsParamsBean);
         mOnlinePop.onLineUser();
+        mOnlinePop.setOnItemClickListener(this);
         initView();
         initSelfSurface();
     }
@@ -107,6 +118,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         size++;
         selfSurface.setVisibility(View.VISIBLE);
         if (size > 8) {
+            showNum = 8;
             surfaceViews = new SurfaceView[8];
             surfaceViews[0] = selfSurface;
             surfaceViews[1] = surface2;
@@ -128,6 +140,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         }
         surfaceViews = new SurfaceView[size];
         if (size == 1) {
+            showNum = 1;
             //只显示自己
             surfaceViews[0] = selfSurface;
             bottomLayout.setVisibility(View.GONE);
@@ -139,6 +152,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             surface7.setVisibility(View.GONE);
             surface8.setVisibility(View.GONE);
         } else if (size == 2) {
+            showNum = 4;
             surfaceViews[0] = selfSurface;
             surfaceViews[1] = surface2;
             bottomLayout.setVisibility(View.VISIBLE);
@@ -150,6 +164,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             surface7.setVisibility(View.GONE);
             surface8.setVisibility(View.GONE);
         } else if (size == 3) {
+            showNum = 4;
             surfaceViews[0] = selfSurface;
             surfaceViews[1] = surface2;
             surfaceViews[2] = surface3;
@@ -162,6 +177,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             surface7.setVisibility(View.GONE);
             surface8.setVisibility(View.GONE);
         } else if (size == 4) {
+            showNum = 4;
             surfaceViews[0] = selfSurface;
             surfaceViews[1] = surface2;
             surfaceViews[2] = surface5;
@@ -175,6 +191,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             surface7.setVisibility(View.GONE);
             surface8.setVisibility(View.GONE);
         } else if (size == 5) {
+            showNum = 6;
             surfaceViews[0] = selfSurface;
             surfaceViews[1] = surface2;
             surfaceViews[2] = surface3;
@@ -189,6 +206,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             surface7.setVisibility(View.INVISIBLE);
             surface8.setVisibility(View.GONE);
         } else if (size == 6) {
+            showNum = 6;
             surfaceViews[0] = selfSurface;
             surfaceViews[1] = surface2;
             surfaceViews[2] = surface3;
@@ -204,6 +222,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             surface7.setVisibility(View.VISIBLE);
             surface8.setVisibility(View.GONE);
         } else if (size == 7) {
+            showNum = 8;
             surfaceViews[0] = selfSurface;
             surfaceViews[1] = surface2;
             surfaceViews[2] = surface3;
@@ -220,6 +239,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             surface7.setVisibility(View.VISIBLE);
             surface8.setVisibility(View.INVISIBLE);
         } else if (size == 8) {
+            showNum = 8;
             bottomLayout.setVisibility(View.VISIBLE);
             surfaceViews[0] = selfSurface;
             surfaceViews[1] = surface2;
@@ -297,8 +317,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             }
         }
 
-        anychat.UserSpeakControl(-1, 1);
-        anychat.UserCameraControl(-1, 1);
+        anychat.UserSpeakControl(selfUserId, 1);
+        anychat.UserCameraControl(selfUserId, 1);
 
     }
 
@@ -464,8 +484,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         L.d(TAG, "OnAnyChatEnterRoomMessage:dwRoomId=" + dwRoomId + ",dwErrorCode=" + dwErrorCode);
         if (dwErrorCode == 0) {
             //打开本地音视频
-            anychat.UserCameraControl(-1, 1);
-            anychat.UserSpeakControl(-1, 1);
+            anychat.UserCameraControl(selfUserId, 1);
+            anychat.UserSpeakControl(selfUserId, 1);
             //获取用户状态
             mRetrofitMo.userState(mJsParamsBean.getRoomId(), mJsParamsBean.getFeedId(), this);
             //获取在线人员
@@ -692,11 +712,47 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     @Override
     public void OnAnyChatUserInfoUpdate(int dwUserId, int dwType) {
-        L.d(TAG,"OnAnyChatUserInfoUpdate:dwUserId="+dwUserId+",dwType="+dwType);
+        L.d(TAG, "OnAnyChatUserInfoUpdate:dwUserId=" + dwUserId + ",dwType=" + dwType);
     }
 
     @Override
     public void OnAnyChatFriendStatus(int dwUserId, int dwStatus) {
-        L.d(TAG,"OnAnyChatFriendStatus:dwUserId="+dwUserId+",dwStatus="+dwStatus);
+        L.d(TAG, "OnAnyChatFriendStatus:dwUserId=" + dwUserId + ",dwStatus=" + dwStatus);
+    }
+
+    /**
+     * 在线人员Item位置切换点击
+     *
+     * @param position
+     * @param bean
+     */
+    @Override
+    public void onItemClick(int position, UsersBean bean) {
+        mOnlinePop.dismiss();
+        mLocationPop = new LocationPop(this, 4);
+        mLocationPop.setOnLocationListener(this);
+        mLocationPop.setOldPos(position);
+        mLocationPop.showOnAnchor(rootView, RelativePopupWindow.VerticalPosition.CENTER,
+                RelativePopupWindow.HorizontalPosition.CENTER, false);
+    }
+
+    /**
+     * 位置切换回调
+     *
+     * @param oldPos
+     * @param newPos
+     */
+    @Override
+    public void loacation(int oldPos, int newPos) {
+        T.showShort("从"+oldPos+"位置切换到"+newPos+"位置");
+        if (userIDList.size()>oldPos){
+            Integer userID = userIDList.get(oldPos);
+            int index = userIDList.indexOf(userID);
+            userIDList.remove(index);
+            //添加到新位置
+            userIDList.add(newPos,userID);
+            //重新显示视图
+            initNetSurface();
+        }
     }
 }

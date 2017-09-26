@@ -22,6 +22,7 @@ import com.tydic.cm.bean.JsParamsBean;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
 import com.tydic.cm.model.RetrofitMo;
+import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnRequestListener;
 import com.tydic.cm.util.ScreenUtil;
 import com.tydic.cm.util.T;
@@ -74,6 +75,15 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
         onLineUser();
+    }
+
+    /**
+     *
+     * 设置Item点击监听
+     * @param onItemClickListener
+     */
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        adapter.setOnItemClickListener(onItemClickListener);
     }
 
     /**
