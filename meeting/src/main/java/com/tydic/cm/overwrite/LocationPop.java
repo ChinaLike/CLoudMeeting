@@ -162,7 +162,8 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
         if (onLocationListener != null) {
             int id = view.getId();
             if (id == R.id.text1) {
-                onLocationListener.loacation(oldPos, 0);
+                T.showShort("这个位置是你自己的视频哦！");
+                //onLocationListener.loacation(oldPos, 0);
             } else if (id == R.id.text2) {
                 onLocationListener.loacation(oldPos, 1);
             } else if (id == R.id.text3) {

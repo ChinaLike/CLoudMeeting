@@ -233,6 +233,9 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
     }
 
     public void onDestroy() {
+        if (progressDialog != null && progressDialog.isShowing()){
+            progressDialog.dismiss();
+        }
         anyChatCoreSDK.LeaveRoom(-1);
         anyChatCoreSDK.Logout();
         anyChatCoreSDK.Release();

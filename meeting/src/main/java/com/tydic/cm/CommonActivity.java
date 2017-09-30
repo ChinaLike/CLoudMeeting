@@ -2,18 +2,24 @@ package com.tydic.cm;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
+import com.tydic.cm.adapter.SurfaceAdapter;
 import com.tydic.cm.base.BaseActivity;
+import com.tydic.cm.bean.SurfaceBean;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
+import com.tydic.cm.model.inf.LocalHelper;
 import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnLocationListener;
 import com.tydic.cm.overwrite.LocationPop;
@@ -32,22 +38,22 @@ import static com.tydic.cm.constant.Key.CLIENT_NOTICE_PRIMARY_SPEAKER;
  * 普通视频模式
  */
 public class CommonActivity extends BaseActivity implements View.OnClickListener,
-        MeetingMenuPop.MenuClickListener, OnItemClickListener, OnLocationListener {
-
-
-    private LinearLayout topLayout, bottomLayout;
-    /**
-     * 显示视频控件
-     */
-    private SurfaceView selfSurface, surface2, surface3, surface4, surface5, surface6, surface7, surface8;
+        MeetingMenuPop.MenuClickListener, OnItemClickListener, OnLocationListener,
+        LocalHelper {
 
     private RelativeLayout rootView;
+    /**
+     * 远程视频显示
+     */
+    private RecyclerView recyclerView;
+    /**
+     * 本地视频显示
+     */
+    private SurfaceView selfSurface;
+
+    private FrameLayout localParent;
 
     private ImageView cameraStatus, camera, microphone, sound, menu;//摄像头的状态，摄像头切换，本地麦克风，远程麦克风，菜单
-
-    private List<Integer> userIDList = new ArrayList<>();//远程的ID
-
-    private SurfaceView[] surfaceViews;//显示远程视频的承载
 
     boolean isSpeaking = true;//是否可以说话
 
@@ -61,13 +67,21 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     private OnlinePop mOnlinePop;
 
-    private List<UsersBean> onLineUsers = new ArrayList<>();
-
     private LocationPop mLocationPop;
     /**
-     * 界面显示网格数目
+     * 一排显示的个数
      */
-    private int showNum = 4;
+    private int showNum = 1;
+
+    /**
+     * 远程视频适配器
+     */
+    private SurfaceAdapter adapter;
+    /**
+     * 适配数据
+     */
+    private List<SurfaceBean> surfaceBeanList = new ArrayList<>();
+
 
     @Override
     protected void init(@Nullable Bundle savedInstanceState) {
@@ -76,24 +90,23 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         mOnlinePop = new OnlinePop(this, mJsParamsBean);
         mOnlinePop.onLineUser();
         mOnlinePop.setOnItemClickListener(this);
+        //初始化控件
         initView();
-        initSelfSurface();
+        //通用配置
+        initSurfaceSDK();
+        //初始化适配器
+        initAdapter(showNum);
+        //初始化本地视频
+        initLocalSurface();
     }
 
     /**
      * 初始化视图
      */
     private void initView() {
-        topLayout = (LinearLayout) findViewById(R.id.top);
-        bottomLayout = (LinearLayout) findViewById(R.id.bottom);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         selfSurface = (SurfaceView) findViewById(R.id.self_surface);
-        surface2 = (SurfaceView) findViewById(R.id.surface2);
-        surface3 = (SurfaceView) findViewById(R.id.surface3);
-        surface4 = (SurfaceView) findViewById(R.id.surface4);
-        surface5 = (SurfaceView) findViewById(R.id.surface5);
-        surface6 = (SurfaceView) findViewById(R.id.surface6);
-        surface7 = (SurfaceView) findViewById(R.id.surface7);
-        surface8 = (SurfaceView) findViewById(R.id.surface8);
+        localParent = (FrameLayout) findViewById(R.id.local_parent);
         rootView = (RelativeLayout) findViewById(R.id.root);
         cameraStatus = (ImageView) findViewById(R.id.meeting_transcribe);
         cameraStatus.setOnClickListener(this);
@@ -105,258 +118,52 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         sound.setOnClickListener(this);
         menu = (ImageView) findViewById(R.id.meeting_menu);
         menu.setOnClickListener(this);
-        //刚进来先显示自己画面
-        showSelf();
     }
 
     /**
-     * 根据当前获取参会人员的数量来显示视频数，最大8频
+     * 初始化适配器
      *
-     * @param size
+     * @param showCount
      */
-    private void showSurface(int size) {
-        size++;
-        selfSurface.setVisibility(View.VISIBLE);
-        if (size > 8) {
-            showNum = 8;
-            surfaceViews = new SurfaceView[8];
-            surfaceViews[0] = selfSurface;
-            surfaceViews[1] = surface2;
-            surfaceViews[2] = surface3;
-            surfaceViews[3] = surface4;
-            surfaceViews[4] = surface5;
-            surfaceViews[5] = surface6;
-            surfaceViews[6] = surface7;
-            surfaceViews[7] = surface8;
-            selfSurface.setVisibility(View.VISIBLE);
-            surface2.setVisibility(View.VISIBLE);
-            surface3.setVisibility(View.VISIBLE);
-            surface4.setVisibility(View.VISIBLE);
-            surface5.setVisibility(View.VISIBLE);
-            surface6.setVisibility(View.VISIBLE);
-            surface7.setVisibility(View.VISIBLE);
-            surface8.setVisibility(View.VISIBLE);
-            return;
-        }
-        surfaceViews = new SurfaceView[size];
-        if (size == 1) {
-            showNum = 1;
-            //只显示自己
-            surfaceViews[0] = selfSurface;
-            bottomLayout.setVisibility(View.GONE);
-            surface2.setVisibility(View.GONE);
-            surface3.setVisibility(View.GONE);
-            surface4.setVisibility(View.GONE);
-            surface5.setVisibility(View.GONE);
-            surface6.setVisibility(View.GONE);
-            surface7.setVisibility(View.GONE);
-            surface8.setVisibility(View.GONE);
-        } else if (size == 2) {
-            showNum = 4;
-            surfaceViews[0] = selfSurface;
-            surfaceViews[1] = surface2;
-            bottomLayout.setVisibility(View.VISIBLE);
-            surface2.setVisibility(View.VISIBLE);
-            surface3.setVisibility(View.GONE);
-            surface4.setVisibility(View.GONE);
-            surface5.setVisibility(View.INVISIBLE);
-            surface6.setVisibility(View.INVISIBLE);
-            surface7.setVisibility(View.GONE);
-            surface8.setVisibility(View.GONE);
-        } else if (size == 3) {
-            showNum = 4;
-            surfaceViews[0] = selfSurface;
-            surfaceViews[1] = surface2;
-            surfaceViews[2] = surface3;
-            bottomLayout.setVisibility(View.VISIBLE);
-            surface2.setVisibility(View.VISIBLE);
-            surface3.setVisibility(View.GONE);
-            surface4.setVisibility(View.GONE);
-            surface5.setVisibility(View.VISIBLE);
-            surface6.setVisibility(View.INVISIBLE);
-            surface7.setVisibility(View.GONE);
-            surface8.setVisibility(View.GONE);
-        } else if (size == 4) {
-            showNum = 4;
-            surfaceViews[0] = selfSurface;
-            surfaceViews[1] = surface2;
-            surfaceViews[2] = surface5;
-            surfaceViews[3] = surface6;
-            bottomLayout.setVisibility(View.VISIBLE);
-            surface2.setVisibility(View.VISIBLE);
-            surface3.setVisibility(View.GONE);
-            surface4.setVisibility(View.GONE);
-            surface5.setVisibility(View.VISIBLE);
-            surface6.setVisibility(View.VISIBLE);
-            surface7.setVisibility(View.GONE);
-            surface8.setVisibility(View.GONE);
-        } else if (size == 5) {
-            showNum = 6;
-            surfaceViews[0] = selfSurface;
-            surfaceViews[1] = surface2;
-            surfaceViews[2] = surface3;
-            surfaceViews[3] = surface5;
-            surfaceViews[4] = surface6;
-            bottomLayout.setVisibility(View.VISIBLE);
-            surface2.setVisibility(View.VISIBLE);
-            surface3.setVisibility(View.VISIBLE);
-            surface4.setVisibility(View.GONE);
-            surface5.setVisibility(View.VISIBLE);
-            surface6.setVisibility(View.VISIBLE);
-            surface7.setVisibility(View.INVISIBLE);
-            surface8.setVisibility(View.GONE);
-        } else if (size == 6) {
-            showNum = 6;
-            surfaceViews[0] = selfSurface;
-            surfaceViews[1] = surface2;
-            surfaceViews[2] = surface3;
-            surfaceViews[3] = surface5;
-            surfaceViews[4] = surface6;
-            surfaceViews[5] = surface7;
-            bottomLayout.setVisibility(View.VISIBLE);
-            surface2.setVisibility(View.VISIBLE);
-            surface3.setVisibility(View.VISIBLE);
-            surface4.setVisibility(View.GONE);
-            surface5.setVisibility(View.VISIBLE);
-            surface6.setVisibility(View.VISIBLE);
-            surface7.setVisibility(View.VISIBLE);
-            surface8.setVisibility(View.GONE);
-        } else if (size == 7) {
-            showNum = 8;
-            surfaceViews[0] = selfSurface;
-            surfaceViews[1] = surface2;
-            surfaceViews[2] = surface3;
-            surfaceViews[3] = surface4;
-            surfaceViews[4] = surface5;
-            surfaceViews[5] = surface6;
-            surfaceViews[6] = surface7;
-            bottomLayout.setVisibility(View.VISIBLE);
-            surface2.setVisibility(View.VISIBLE);
-            surface3.setVisibility(View.VISIBLE);
-            surface4.setVisibility(View.VISIBLE);
-            surface5.setVisibility(View.VISIBLE);
-            surface6.setVisibility(View.VISIBLE);
-            surface7.setVisibility(View.VISIBLE);
-            surface8.setVisibility(View.INVISIBLE);
-        } else if (size == 8) {
-            showNum = 8;
-            bottomLayout.setVisibility(View.VISIBLE);
-            surfaceViews[0] = selfSurface;
-            surfaceViews[1] = surface2;
-            surfaceViews[2] = surface3;
-            surfaceViews[3] = surface4;
-            surfaceViews[4] = surface5;
-            surfaceViews[5] = surface6;
-            surfaceViews[6] = surface7;
-            surfaceViews[7] = surface8;
-            surface2.setVisibility(View.VISIBLE);
-            surface3.setVisibility(View.VISIBLE);
-            surface4.setVisibility(View.VISIBLE);
-            surface5.setVisibility(View.VISIBLE);
-            surface6.setVisibility(View.VISIBLE);
-            surface7.setVisibility(View.VISIBLE);
-            surface8.setVisibility(View.VISIBLE);
+    private void initAdapter(int showCount) {
+        adapter = new SurfaceAdapter(mContext, surfaceBeanList);
+        adapter.setAnychat(anychat);
+        adapter.setColumn(showCount);
+        adapter.setLocalHelper(this);
+        GridLayoutManager manager = new GridLayoutManager(mContext, showCount);
+        recyclerView.setLayoutManager(manager);
+        recyclerView.setAdapter(adapter);
+
+    }
+
+    /**
+     * 初始化通用配置
+     */
+    private void initSurfaceSDK() {
+        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
+            if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
+                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
+            }
+        } else {
+            String[] strVideoCaptures = anychat.EnumVideoCapture();
+            if (strVideoCaptures != null && strVideoCaptures.length > 1) {
+                for (int i = 0; i < strVideoCaptures.length; i++) {
+                    String strDevices = strVideoCaptures[i];
+                    if (strDevices.indexOf("Front") >= 0) {
+                        anychat.SelectVideoCapture(strDevices);
+                        break;
+                    }
+                }
+            }
         }
     }
 
-    /**
-     * 显示主讲人
-     */
-    private void showMainSpeaker() {
-        topLayout.setVisibility(View.VISIBLE);
-        bottomLayout.setVisibility(View.GONE);
-        selfSurface.setVisibility(View.GONE);
-        surface2.setVisibility(View.VISIBLE);
-        surface3.setVisibility(View.GONE);
-        surface4.setVisibility(View.GONE);
-        surface5.setVisibility(View.GONE);
-        surface6.setVisibility(View.GONE);
-        surface7.setVisibility(View.GONE);
-        surface8.setVisibility(View.GONE);
-    }
-
-    /**
-     * 只显示自己
-     */
-    private void showSelf() {
-        topLayout.setVisibility(View.VISIBLE);
-        bottomLayout.setVisibility(View.GONE);
-        selfSurface.setVisibility(View.VISIBLE);
-        surface2.setVisibility(View.GONE);
-        surface3.setVisibility(View.GONE);
-        surface4.setVisibility(View.GONE);
-        surface5.setVisibility(View.GONE);
-        surface6.setVisibility(View.GONE);
-        surface7.setVisibility(View.GONE);
-        surface8.setVisibility(View.GONE);
-    }
-
-    /**
-     * 初始化自己的视频
-     */
-    private void initSelfSurface() {
+    private void initLocalSurface() {
         // 视频如果是采用java采集
+        selfSurface.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
             selfSurface.getHolder().addCallback(AnyChatCoreSDK.mCameraHelper);
         }
-
-        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-            if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
-                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
-            }
-        } else {
-            String[] strVideoCaptures = anychat.EnumVideoCapture();
-            if (strVideoCaptures != null && strVideoCaptures.length > 1) {
-                for (int i = 0; i < strVideoCaptures.length; i++) {
-                    String strDevices = strVideoCaptures[i];
-                    if (strDevices.indexOf("Front") >= 0) {
-                        anychat.SelectVideoCapture(strDevices);
-                        break;
-                    }
-                }
-            }
-        }
-
-        anychat.UserSpeakControl(selfUserId, 1);
-        anychat.UserCameraControl(selfUserId, 1);
-
-    }
-
-    /**
-     * 初始化远程视频
-     */
-    private void initNetSurface() {
-        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-            if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
-                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
-            }
-        } else {
-            String[] strVideoCaptures = anychat.EnumVideoCapture();
-            if (strVideoCaptures != null && strVideoCaptures.length > 1) {
-                for (int i = 0; i < strVideoCaptures.length; i++) {
-                    String strDevices = strVideoCaptures[i];
-                    if (strDevices.indexOf("Front") >= 0) {
-                        anychat.SelectVideoCapture(strDevices);
-                        break;
-                    }
-                }
-            }
-        }
-        if (userIDList.size() != surfaceViews.length - 1) {
-            return;
-        }
-        for (int i = 0; i < userIDList.size(); i++) {
-            int index = anychat.mVideoHelper.bindVideo(surfaceViews[i + 1].getHolder());
-            anychat.mVideoHelper.SetVideoUser(index, userIDList.get(i));
-            anychat.UserCameraControl(userIDList.get(i), 1);
-            //解决在关闭远程声音下有人进出房间时又能听见远程声音
-            if (isSound) {
-                anychat.UserSpeakControl(userIDList.get(i), 1);
-            } else {
-                anychat.UserSpeakControl(userIDList.get(i), 0);
-            }
-        }
-
     }
 
     @Override
@@ -438,33 +245,25 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                     //userId为0表示取消主讲人
                     if ("0".equals(arr[1])) {
                         T.showShort("已取消主讲人");
-                        int[] onlineUserCount = AnyChatCoreSDK.getInstance(this).GetOnlineUser();
-                        //显示所有人画面
-                        userIDList.clear();
-                        for (int i = 0; i < onlineUserCount.length; i++) {
-                            userIDList.add(onlineUserCount[i]);
-                        }
-                        showSurface(userIDList.size());
-                        initNetSurface();
-
+                        mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
                     } else {
                         int speaker = Integer.parseInt(arr[1]);
+                        surfaceBeanList.clear();
+                        SurfaceBean bean = new SurfaceBean();
+                        bean.setUserId(speaker);
+                        bean.setOpenCamera(true);
+                        bean.setSound(true);
+                        bean.setSpeaker(true);
                         if (speaker == selfUserId) {
                             T.showShort("你被设置为主讲人了！");
                             //主讲人时自己
-                            showSelf();
+                            bean.setLocal(true);
                         } else {
                             //主讲人是别人
-                            userIDList.clear();
-                            for (UsersBean onLineUser : onLineUsers) {
-                                if (onLineUser.getUserId().equals(arr[1] + "")) {
-                                    T.showShort(onLineUser.getNickName() + "被设置为主讲人了！");
-                                }
-                            }
-                            userIDList.add(speaker);
-                            showMainSpeaker();
-                            initNetSurface();
+                            bean.setLocal(false);
                         }
+                        surfaceBeanList.add(bean);
+                        adapter.notifyDataSetChanged();
                     }
                     break;
                 default:
@@ -479,28 +278,28 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     }
 
+    /**
+     * 进入房间成功
+     *
+     * @param dwRoomId
+     * @param dwErrorCode
+     */
     @Override
     public void OnAnyChatEnterRoomMessage(int dwRoomId, int dwErrorCode) {
         L.d(TAG, "OnAnyChatEnterRoomMessage:dwRoomId=" + dwRoomId + ",dwErrorCode=" + dwErrorCode);
+        //进入房间成功
         if (dwErrorCode == 0) {
-            //打开本地音视频
-            anychat.UserCameraControl(selfUserId, 1);
-            anychat.UserSpeakControl(selfUserId, 1);
-            //获取用户状态
-            mRetrofitMo.userState(mJsParamsBean.getRoomId(), mJsParamsBean.getFeedId(), this);
-            //获取在线人员
-            mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+            //打开本地音视频，初次进入先打开本地视频
+            anychat.UserCameraControl(-1, 1);
+            anychat.UserSpeakControl(-1, 1);
+            //更新一次本地状态
             feedbackState(Key.UPDATE_CLIENT_STATUS);
-            int[] onlineUserCount = AnyChatCoreSDK.getInstance(this).GetOnlineUser();
-            userIDList.clear();
-            for (int i = 0; i < onlineUserCount.length; i++) {
-                userIDList.add(onlineUserCount[i]);
-            }
-            showSurface(userIDList.size());
-            initNetSurface();
-
-            initAudio();
+            //获取用户状态,更新本地按钮状态
+            mRetrofitMo.userState(mJsParamsBean.getRoomId(), mJsParamsBean.getFeedId(), this);
+            //获取在线人员，适配界面数据
+            mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
         } else {
+            //进入房间失败
             T.showShort("进入会议房间失败，即将退出！");
         }
     }
@@ -508,6 +307,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     /**
      * 当前房间用户离开或者进入房间触发这个回调，dwUserId用户  id," bEnter==true"表示进入房间,反之表示离开房间
+     * -
      *
      * @param dwUserId
      * @param bEnter
@@ -516,17 +316,13 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     public void OnAnyChatUserAtRoomMessage(int dwUserId, boolean bEnter) {
         L.d(TAG, "OnAnyChatUserAtRoomMessage:dwUserId=" + dwUserId + ",bEnter=" + bEnter);
         //获取在线人员,每当有人进入或退出时获取一次
-        mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+        // mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
         if (bEnter) {
             //有人进入房间
             enterRoom(dwUserId);
-            showSurface(userIDList.size());
-            initNetSurface();
         } else {
             //有人退出房间
             exitRoom(dwUserId);
-            showSurface(userIDList.size());
-            initNetSurface();
         }
     }
 
@@ -537,8 +333,22 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * @return
      */
     private void enterRoom(int dwUserId) {
-        if (!userIDList.contains(dwUserId)) {
-            userIDList.add(dwUserId);
+        boolean isAdd = false;
+        for (SurfaceBean bean : surfaceBeanList) {
+            if (bean.getUserId() == dwUserId) {
+                isAdd = true;
+                break;
+            }
+        }
+        if (!isAdd) {
+            SurfaceBean bean = new SurfaceBean();
+            bean.setUserId(dwUserId);
+            bean.setLocal(false);
+            bean.setSpeaker(true);
+            bean.setSound(true);
+            bean.setOpenCamera(true);
+            surfaceBeanList.add(bean);
+            adapter.notifyDataSetChanged();
         }
     }
 
@@ -549,9 +359,16 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * @return
      */
     private void exitRoom(int dwUserId) {
-        if (userIDList.contains(dwUserId)) {
-            int index = userIDList.indexOf(dwUserId);
-            userIDList.remove(index);
+        SurfaceBean removeBean = null;
+        for (SurfaceBean bean : surfaceBeanList) {
+            if (bean.getUserId() == dwUserId) {
+                removeBean = bean;
+                break;
+            }
+        }
+        if (removeBean != null) {
+            surfaceBeanList.remove(removeBean);
+            adapter.notifyDataSetChanged();
         }
     }
 
@@ -574,14 +391,25 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     }
 
     /**
-     * 初始化
-     *
-     * @param soundState
-     * @param micState
-     * @param caramState
+     * 初始化用户状态
      */
-    private void initUserState(String soundState, String micState, int caramState) {
-
+    private void initUserState() {
+        if (videoState.equals(Key.VIDEO_OPEN)) {
+            cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
+            anychat.UserCameraControl(-1,1);
+        } else {
+            cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
+            anychat.UserCameraControl(-1,0);
+        }
+        if (micState.equals(Key.AUDIO_OPEN)) {
+            microphone.setImageResource(R.drawable.img_meeting_microphone);
+            anychat.UserSpeakControl(-1,1);
+        } else {
+            microphone.setImageResource(R.drawable.meeting_microphone_disable);
+            anychat.UserSpeakControl(-1,0);
+        }
+        //更新状态
+        feedbackState(Key.UPDATE_CLIENT_STATUS);
     }
 
     @Override
@@ -591,21 +419,37 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 //获取用户状态
                 userState = (UsersBean) obj;
                 L.d(TAG, "用户状态：" + userState.toString());
+                videoState = userState.getVideoStatus();
+                micState = userState.getAudioStatus();
+                initUserState();
                 break;
             case Key.ON_LINE_USER:
                 //获取在线人员列表
                 L.d(TAG, "在线人员列表：" + obj.toString());
-                // onLineUsers = (List<UsersBean>) obj;
-                List<UsersBean> objList = (List<UsersBean>) obj;
-                int size = objList.size();
-                onLineUsers.clear();
-                //只有状态值为2的才显示摄像头
-                for (int i = 0; i < size; i++) {
-                    if (objList.get(i).getVideoStatus().equals("2")) {
-                        onLineUsers.add(objList.get(i));
+                surfaceBeanList.clear();
+                for (UsersBean item : (List<UsersBean>) obj) {
+                    SurfaceBean bean = new SurfaceBean();
+                    bean.setUserId(Integer.parseInt(item.getUserId()));
+                    if (Integer.parseInt(item.getUserId()) == (selfUserId)) {
+                        bean.setLocal(true);
+                    } else {
+                        bean.setLocal(false);
                     }
+                    //设置语音状态
+                    if (item.getAudioStatus().equals(Key.AUDIO_OPEN)) {
+                        bean.setSound(true);
+                    } else {
+                        bean.setSound(false);
+                    }
+                    //设置摄像头状态
+                    if (item.getVideoStatus().equals(Key.VIDEO_OPEN)) {
+                        bean.setOpenCamera(true);
+                    } else {
+                        bean.setOpenCamera(false);
+                    }
+                    surfaceBeanList.add(bean);
                 }
-                break;
+                resetAdapter(surfaceBeanList.size());
             case Key.SEND_MESSAGE:
                 //发送消息
                 L.d(TAG, "发送信息：" + obj.toString());
@@ -613,6 +457,28 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             default:
                 break;
         }
+    }
+
+    /**
+     * 重置适配器
+     *
+     * @param size
+     */
+    private void resetAdapter(int size) {
+        GridLayoutManager manager = null;
+        if (size > 1 && size <= 4) {
+            showNum = 2;
+        } else if (size > 4 && size <= 6) {
+            showNum = 3;
+        } else if (size > 6) {
+            showNum = 4;
+        } else {
+            showNum = 1;
+        }
+        manager = new GridLayoutManager(mContext, showNum);
+        adapter.setColumn(showNum);
+        recyclerView.setLayoutManager(manager);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -629,14 +495,14 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             if (isHasCamera) {
                 if (isOpenCamera) {
                     //执行关闭摄像头
-                    userState.setDisplayMode(1);
+                    userState.setVideoStatus("1");
                     videoState = "1";
                     feedbackState(Key.UPDATE_CLIENT_STATUS);
                     cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
                     anychat.UserCameraControl(-1, 0);
                 } else {
                     //执行打开摄像头
-                    userState.setDisplayMode(2);
+                    userState.setVideoStatus("2");
                     videoState = "2";
                     feedbackState(Key.UPDATE_CLIENT_STATUS);
                     cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
@@ -710,16 +576,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         }
     }
 
-    @Override
-    public void OnAnyChatUserInfoUpdate(int dwUserId, int dwType) {
-        L.d(TAG, "OnAnyChatUserInfoUpdate:dwUserId=" + dwUserId + ",dwType=" + dwType);
-    }
-
-    @Override
-    public void OnAnyChatFriendStatus(int dwUserId, int dwStatus) {
-        L.d(TAG, "OnAnyChatFriendStatus:dwUserId=" + dwUserId + ",dwStatus=" + dwStatus);
-    }
-
     /**
      * 在线人员Item位置切换点击
      *
@@ -729,7 +585,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     @Override
     public void onItemClick(int position, UsersBean bean) {
         mOnlinePop.dismiss();
-        mLocationPop = new LocationPop(this, 4);
+        mLocationPop = new LocationPop(this, surfaceBeanList.size());
         mLocationPop.setOnLocationListener(this);
         mLocationPop.setOldPos(position);
         mLocationPop.showOnAnchor(rootView, RelativePopupWindow.VerticalPosition.CENTER,
@@ -744,15 +600,32 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     @Override
     public void loacation(int oldPos, int newPos) {
-        T.showShort("从"+oldPos+"位置切换到"+newPos+"位置");
-        if (userIDList.size()>oldPos){
-            Integer userID = userIDList.get(oldPos);
-            int index = userIDList.indexOf(userID);
-            userIDList.remove(index);
-            //添加到新位置
-            userIDList.add(newPos,userID);
-            //重新显示视图
-            initNetSurface();
-        }
+        T.showShort("从" + oldPos + "位置切换到" + newPos + "位置");
+
+    }
+
+    /**
+     * 设置本地视频显示的位置
+     *
+     * @param position 第几个元素
+     * @param bean     参数
+     * @param width    视频的宽度
+     * @param height   视频的高度
+     * @param x        X轴移动的位置
+     * @param y        Y轴移动的位置
+     */
+    @Override
+    public void local(int position, SurfaceBean bean, int width, int height, int x, int y) {
+        L.d(TAG,"width="+width+",,,height="+height);
+        localParent.removeView(selfSurface);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) localParent.getLayoutParams();
+        params.leftMargin = x;
+        params.topMargin = y;
+        params.width = width;
+        params.height = height;
+        localParent.setLayoutParams(params);
+        localParent.invalidate();
+        //  selfSurface.setZOrderOnTop(true);
+        L.d(TAG,"width="+localParent.getWidth()+",height="+localParent.getHeight());
     }
 }
