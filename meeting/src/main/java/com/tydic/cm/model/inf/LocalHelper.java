@@ -1,6 +1,7 @@
 package com.tydic.cm.model.inf;
 
 import com.tydic.cm.bean.SurfaceBean;
+import com.tydic.cm.bean.UsersBean;
 
 /**
  * 本地视频帮助类
@@ -18,5 +19,5 @@ public interface LocalHelper {
      * @param x        X轴移动的位置
      * @param y        Y轴移动的位置
      */
-    void local(int position, SurfaceBean bean, int width, int height, int x, int y);
+    void local(int position, UsersBean bean, int width, int height, int x, int y);
 }

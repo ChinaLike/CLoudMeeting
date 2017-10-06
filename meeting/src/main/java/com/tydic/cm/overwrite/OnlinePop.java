@@ -19,6 +19,7 @@ import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.R;
 import com.tydic.cm.adapter.OnLinePeopleAdapter;
 import com.tydic.cm.bean.JsParamsBean;
+import com.tydic.cm.bean.LocationEventBus;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
 import com.tydic.cm.model.RetrofitMo;
@@ -26,6 +27,9 @@ import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnRequestListener;
 import com.tydic.cm.util.ScreenUtil;
 import com.tydic.cm.util.T;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +54,7 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
 
     public OnlinePop(Activity context, JsParamsBean bean) {
         this.bean = bean;
-        // EventBus.getDefault().register(this);
+        EventBus.getDefault().register(this);
         View view = LayoutInflater.from(context).inflate(R.layout.pop_online_list, null);
         setContentView(view);
         tvNum = view.findViewById(R.id.tvNum);
@@ -78,8 +82,8 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
     }
 
     /**
-     *
      * 设置Item点击监听
+     *
      * @param onItemClickListener
      */
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
@@ -125,6 +129,24 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
                 animator.start();
             }
         });
+    }
+
+    /**
+     * EventBus订阅
+     */
+    @Subscribe
+    public void location(LocationEventBus event) {
+        int oldPos = event.getOldPos();
+        int newPos = event.getNewPos();
+        if (list.size() == 0) {
+            return;
+        }
+        UsersBean oldBean = list.get(oldPos);
+        if (list.remove(oldBean)) {
+            list.add(newPos, oldBean);
+            adapter.notifyDataSetChanged();
+        }
+
     }
 
 //    @Subscribe

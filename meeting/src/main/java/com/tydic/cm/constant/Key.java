@@ -49,4 +49,7 @@ public interface Key {
     String AUDIO_CLOSE = "0";//语音关闭
     String AUDIO_OPEN = "1";//语音打开
 
+    String SPEAKER = "1";//是主讲人
+    String NO_SPEAKER = "0";//不是主讲人
+
 }

@@ -14,6 +14,8 @@ import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.tydic.cm.R;
 import com.tydic.cm.bean.SurfaceBean;
+import com.tydic.cm.bean.UsersBean;
+import com.tydic.cm.constant.Key;
 import com.tydic.cm.model.inf.LocalHelper;
 import com.tydic.cm.util.ScreenUtil;
 
@@ -28,7 +30,7 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
 
     private Context mContext;
 
-    private List<SurfaceBean> mList;
+    private List<UsersBean> mList;
     /**
      * 每一屏幕的宽和高
      */
@@ -46,9 +48,11 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
      */
     private int column = 1;
 
+    private int selfID;
+
     private int[] testColor = new int[]{Color.RED, Color.BLUE, Color.GRAY, Color.RED, Color.BLUE, Color.GRAY, Color.RED, Color.BLUE, Color.GRAY};
 
-    public SurfaceAdapter(Context mContext, List<SurfaceBean> mList) {
+    public SurfaceAdapter(Context mContext, List<UsersBean> mList) {
         this.mContext = mContext;
         this.mList = mList;
     }
@@ -60,22 +64,33 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
 
     @Override
     public void onBindViewHolder(SurfaceViewHolder holder, int position) {
-        SurfaceBean bean = mList.get(position);
+        UsersBean bean = mList.get(position);
         holder.parent.setLayoutParams(params);
+        int userID = Integer.parseInt(bean.getUserId());
         //   holder.surfaceLayout.setBackgroundColor(testColor[position]);
-        if (bean.isLocal()) {
-            // initLocalSurface(position, bean);
-            // 视频如果是采用java采集
-            holder.surfaceLayout.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-            if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-                holder.surfaceLayout.getHolder().addCallback(AnyChatCoreSDK.mCameraHelper);
+        if (bean.getVideoStatus().equals(Key.VIDEO_OPEN)) {
+            if (userID == selfID) {
+                initLocalSurface(position, bean);
+                // 视频如果是采用java采集
+                holder.surfaceLayout.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+                if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
+                    holder.surfaceLayout.getHolder().addCallback(AnyChatCoreSDK.mCameraHelper);
+                }
+                if (bean.getVideoStatus().equals(Key.VIDEO_OPEN)){
+                    anychat.UserCameraControl(-1, 1);
+                }else {
+                    anychat.UserCameraControl(-1, 0);
+                }
+                if (bean.getAudioStatus().equals(Key.AUDIO_OPEN)){
+                    anychat.UserSpeakControl(-1, 1);
+                }else {
+                    anychat.UserSpeakControl(-1, 0);
+                }
+                //    holder.surfaceLayout.setZOrderOnTop(false);
+            } else {
+                initNetSurface(holder.surfaceLayout, bean);
+                //     holder.surfaceLayout.setZOrderOnTop(true);
             }
-            anychat.UserSpeakControl(-1,1);
-            anychat.UserCameraControl(-1,1);
-            //    holder.surfaceLayout.setZOrderOnTop(false);
-        } else {
-            initNetSurface(holder.surfaceLayout, bean);
-            //     holder.surfaceLayout.setZOrderOnTop(true);
         }
     }
 
@@ -84,6 +99,10 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
         initWH();
         params = new RelativeLayout.LayoutParams(width, height);
         return mList == null ? 0 : mList.size();
+    }
+
+    public void setSelfID(int selfID) {
+        this.selfID = selfID;
     }
 
     /**
@@ -104,7 +123,7 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
      * @param position
      * @param bean
      */
-    private void initLocalSurface(int position, SurfaceBean bean) {
+    private void initLocalSurface(int position, UsersBean bean) {
         if (mLocalHelper != null) {
             int x = 0;//X轴偏移位置
             int y = 0;//Y轴偏移位置
@@ -123,18 +142,18 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
     /**
      * 初始化远程视频
      */
-    private void initNetSurface(SurfaceView surfaceView, SurfaceBean surfaceBean) {
-        int userID = surfaceBean.getUserId();
+    private void initNetSurface(SurfaceView surfaceView, UsersBean surfaceBean) {
+        int userID = Integer.parseInt(surfaceBean.getUserId());
         int index = anychat.mVideoHelper.bindVideo(surfaceView.getHolder());
         anychat.mVideoHelper.SetVideoUser(index, userID);
 
         //解决在关闭远程声音下有人进出房间时又能听见远程声音
-        if (surfaceBean.isSound()) {
+        if (surfaceBean.getAudioStatus().equals(Key.AUDIO_OPEN)) {
             anychat.UserSpeakControl(userID, 1);
         } else {
             anychat.UserSpeakControl(userID, 0);
         }
-        if (surfaceBean.isOpenCamera()) {
+        if (surfaceBean.getVideoStatus().equals(Key.VIDEO_OPEN)) {
             anychat.UserCameraControl(userID, 1);
         } else {
             anychat.UserCameraControl(userID, 0);

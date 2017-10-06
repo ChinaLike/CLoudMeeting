@@ -80,7 +80,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     /**
      * 适配数据
      */
-    private List<SurfaceBean> surfaceBeanList = new ArrayList<>();
+    private List<UsersBean> surfaceBeanList = new ArrayList<>();
 
 
     @Override
@@ -127,6 +127,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     private void initAdapter(int showCount) {
         adapter = new SurfaceAdapter(mContext, surfaceBeanList);
+        adapter.setSelfID(selfUserId);
         adapter.setAnychat(anychat);
         adapter.setColumn(showCount);
         adapter.setLocalHelper(this);
@@ -178,7 +179,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             String receiveMsg = new String(lpBuf, "utf-8");
             L.d(TAG, "OnAnyChatTransBuffer:lpBuf=" + receiveMsg + ",dwLen=" + dwLen);
             //获取用户状态
-            mRetrofitMo.userState(mJsParamsBean.getRoomId(), mJsParamsBean.getFeedId(), this);
+       //     mRetrofitMo.userState(mJsParamsBean.getRoomId(), mJsParamsBean.getFeedId(), this);
 
             if (receiveMsg.contains(" ")) {
                 return;
@@ -248,22 +249,25 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
                     } else {
                         int speaker = Integer.parseInt(arr[1]);
-                        surfaceBeanList.clear();
-                        SurfaceBean bean = new SurfaceBean();
-                        bean.setUserId(speaker);
-                        bean.setOpenCamera(true);
-                        bean.setSound(true);
-                        bean.setSpeaker(true);
+                        UsersBean bean = new UsersBean();
+                        bean.setUserId(speaker+"");
+                        bean.setAudioStatus(Key.AUDIO_OPEN);
+                        bean.setVideoStatus(Key.VIDEO_OPEN);
                         if (speaker == selfUserId) {
                             T.showShort("你被设置为主讲人了！");
-                            //主讲人时自己
-                            bean.setLocal(true);
                         } else {
                             //主讲人是别人
-                            bean.setLocal(false);
+                            for (UsersBean item :surfaceBeanList) {
+                                if (Integer.parseInt(item.getUserId()) == speaker){
+                                    T.showShort(item.getNickName()+"被设置为主讲人了！");
+                                    break;
+                                }
+                            }
                         }
+                        surfaceBeanList.clear();
                         surfaceBeanList.add(bean);
-                        adapter.notifyDataSetChanged();
+                        initAdapter(1);
+//                        adapter.notifyDataSetChanged();
                     }
                     break;
                 default:
@@ -324,6 +328,9 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             //有人退出房间
             exitRoom(dwUserId);
         }
+        if (mOnlinePop != null && mOnlinePop.isShowing()) {
+            mOnlinePop.onLineUser();
+        }
     }
 
     /**
@@ -334,19 +341,17 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     private void enterRoom(int dwUserId) {
         boolean isAdd = false;
-        for (SurfaceBean bean : surfaceBeanList) {
-            if (bean.getUserId() == dwUserId) {
+        for (UsersBean bean : surfaceBeanList) {
+            if (Integer.parseInt(bean.getUserId()) == dwUserId) {
                 isAdd = true;
                 break;
             }
         }
         if (!isAdd) {
-            SurfaceBean bean = new SurfaceBean();
-            bean.setUserId(dwUserId);
-            bean.setLocal(false);
-            bean.setSpeaker(true);
-            bean.setSound(true);
-            bean.setOpenCamera(true);
+            UsersBean bean = new UsersBean();
+            bean.setUserId(dwUserId+"");
+            bean.setAudioStatus(Key.AUDIO_OPEN);
+            bean.setVideoStatus(Key.VIDEO_OPEN);
             surfaceBeanList.add(bean);
             adapter.notifyDataSetChanged();
         }
@@ -359,9 +364,9 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * @return
      */
     private void exitRoom(int dwUserId) {
-        SurfaceBean removeBean = null;
-        for (SurfaceBean bean : surfaceBeanList) {
-            if (bean.getUserId() == dwUserId) {
+        UsersBean removeBean = null;
+        for (UsersBean bean : surfaceBeanList) {
+            if (Integer.parseInt(bean.getUserId()) == dwUserId) {
                 removeBean = bean;
                 break;
             }
@@ -412,6 +417,20 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         feedbackState(Key.UPDATE_CLIENT_STATUS);
     }
 
+    /**
+     * 获取主讲人
+     * @param list
+     * @return
+     */
+    private UsersBean getSpeaker(List<UsersBean> list){
+        for (UsersBean bean :list) {
+            if (bean.getIsPrimarySpeaker().equals(Key.SPEAKER)){
+                return bean;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void onSuccess(int type, Object obj) {
         switch (type) {
@@ -427,27 +446,40 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 //获取在线人员列表
                 L.d(TAG, "在线人员列表：" + obj.toString());
                 surfaceBeanList.clear();
-                for (UsersBean item : (List<UsersBean>) obj) {
-                    SurfaceBean bean = new SurfaceBean();
-                    bean.setUserId(Integer.parseInt(item.getUserId()));
-                    if (Integer.parseInt(item.getUserId()) == (selfUserId)) {
-                        bean.setLocal(true);
-                    } else {
-                        bean.setLocal(false);
+//                surfaceBeanList.addAll((List<UsersBean>) obj);
+                if (getSpeaker((List<UsersBean>)obj) != null){
+                    //已有主讲人
+                    surfaceBeanList.add(getSpeaker((List<UsersBean>)obj));
+                }else {
+                    for (UsersBean item : (List<UsersBean>) obj) {
+                        if (Integer.parseInt(item.getUserId()) == selfUserId) {
+                            item.setAudioStatus(userState.getAudioStatus());
+                            item.setVideoStatus(userState.getVideoStatus());
+                            surfaceBeanList.add(item);
+                        } else {
+                            surfaceBeanList.add(item);
+                        }
+//                    SurfaceBean bean = new SurfaceBean();
+//                    bean.setUserId(Integer.parseInt(item.getUserId()));
+//                    if (Integer.parseInt(item.getUserId()) == (selfUserId)) {
+//                        bean.setLocal(true);
+//                    } else {
+//                        bean.setLocal(false);
+//                    }
+//                    //设置语音状态
+//                    if (item.getAudioStatus().equals(Key.AUDIO_OPEN)) {
+//                        bean.setSound(true);
+//                    } else {
+//                        bean.setSound(false);
+//                    }
+//                    //设置摄像头状态
+//                    if (item.getVideoStatus().equals(Key.VIDEO_OPEN)) {
+//                        bean.setOpenCamera(true);
+//                    } else {
+//                        bean.setOpenCamera(false);
+//                    }
+//                    surfaceBeanList.add(bean);
                     }
-                    //设置语音状态
-                    if (item.getAudioStatus().equals(Key.AUDIO_OPEN)) {
-                        bean.setSound(true);
-                    } else {
-                        bean.setSound(false);
-                    }
-                    //设置摄像头状态
-                    if (item.getVideoStatus().equals(Key.VIDEO_OPEN)) {
-                        bean.setOpenCamera(true);
-                    } else {
-                        bean.setOpenCamera(false);
-                    }
-                    surfaceBeanList.add(bean);
                 }
                 resetAdapter(surfaceBeanList.size());
             case Key.SEND_MESSAGE:
@@ -475,15 +507,53 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         } else {
             showNum = 1;
         }
-        manager = new GridLayoutManager(mContext, showNum);
-        adapter.setColumn(showNum);
-        recyclerView.setLayoutManager(manager);
-        adapter.notifyDataSetChanged();
+        initAdapter(showNum);
+//        manager = new GridLayoutManager(mContext, showNum);
+//        adapter.setColumn(showNum);
+//        adapter.setSelfID(selfUserId);
+//        recyclerView.setLayoutManager(manager);
+//        adapter.notifyDataSetChanged();
     }
 
     @Override
     public void onError(int type, int code) {
 
+    }
+
+    /**
+     * 设置本地状态
+     */
+    private void setLocalImageState(){
+        //设置语音状态
+        if (userState.getAudioStatus().equals(Key.AUDIO_OPEN)){
+            microphone.setImageResource(R.drawable.img_meeting_microphone);
+        }else {
+            microphone.setImageResource(R.drawable.meeting_microphone_disable);
+        }
+        //设置摄像头状态
+        if (userState.getVideoStatus().equals(Key.VIDEO_OPEN)){
+            cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
+        }else {
+            cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
+        }
+        if (getLocalBean() != null){
+            getLocalBean().setVideoStatus(userState.getVideoStatus());
+            getLocalBean().setAudioStatus(userState.getAudioStatus());
+            adapter.notifyItemChanged(surfaceBeanList.indexOf(getLocalBean()));
+        }
+    }
+
+    /**
+     * 获取本地数据
+     * @return
+     */
+    private UsersBean getLocalBean(){
+        for (UsersBean item:surfaceBeanList) {
+            if (Integer.parseInt(item.getUserId()) == selfUserId){
+                return item;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -497,18 +567,20 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                     //执行关闭摄像头
                     userState.setVideoStatus("1");
                     videoState = "1";
-                    feedbackState(Key.UPDATE_CLIENT_STATUS);
-                    cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
-                    anychat.UserCameraControl(-1, 0);
+                  //  feedbackState(Key.UPDATE_CLIENT_STATUS);
+                  //  cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
+                  //  anychat.UserCameraControl(-1, 0);
                 } else {
                     //执行打开摄像头
                     userState.setVideoStatus("2");
                     videoState = "2";
-                    feedbackState(Key.UPDATE_CLIENT_STATUS);
-                    cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
-                    anychat.UserCameraControl(-1, 1);
+               //     feedbackState(Key.UPDATE_CLIENT_STATUS);
+                //    cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
+                  //  anychat.UserCameraControl(-1, 1);
                 }
-                mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+                feedbackState(Key.UPDATE_CLIENT_STATUS);
+                setLocalImageState();
+              //  mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
                 isOpenCamera = !isOpenCamera;
             } else {
                 //没有摄像头
@@ -523,16 +595,17 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             if (isSpeaking) {
                 userState.setAudioStatus("0");
                 micState = "0";
-                feedbackState(Key.UPDATE_CLIENT_STATUS);
+              //  feedbackState(Key.UPDATE_CLIENT_STATUS);
                 microphone.setImageResource(R.drawable.meeting_microphone_disable);
-                AnyChatCoreSDK.getInstance(this).UserSpeakControl(-1, 0);
+                anychat.UserSpeakControl(-1, 0);
             } else {
                 microphone.setImageResource(R.drawable.img_meeting_microphone);
                 userState.setAudioStatus("1");
                 micState = "1";
-                feedbackState(Key.UPDATE_CLIENT_STATUS);
-                AnyChatCoreSDK.getInstance(this).UserSpeakControl(-1, 1);
+              //  feedbackState(Key.UPDATE_CLIENT_STATUS);
+                anychat.UserSpeakControl(-1, 1);
             }
+            feedbackState(Key.UPDATE_CLIENT_STATUS);
             isSpeaking = !isSpeaking;
         } else if (id == R.id.meeting_sound) {
             //远程声音
@@ -600,8 +673,11 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     @Override
     public void loacation(int oldPos, int newPos) {
-        T.showShort("从" + oldPos + "位置切换到" + newPos + "位置");
-
+      //  T.showShort("从" + oldPos + "位置切换到" + newPos + "位置");
+        UsersBean oldBean = surfaceBeanList.get(oldPos);
+        surfaceBeanList.remove(oldPos);
+        surfaceBeanList.add(newPos,oldBean);
+        initAdapter(showNum);
     }
 
     /**
@@ -615,17 +691,17 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * @param y        Y轴移动的位置
      */
     @Override
-    public void local(int position, SurfaceBean bean, int width, int height, int x, int y) {
+    public void local(int position, UsersBean bean, int width, int height, int x, int y) {
         L.d(TAG,"width="+width+",,,height="+height);
         localParent.removeView(selfSurface);
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) localParent.getLayoutParams();
-        params.leftMargin = x;
-        params.topMargin = y;
-        params.width = width;
-        params.height = height;
-        localParent.setLayoutParams(params);
-        localParent.invalidate();
-        //  selfSurface.setZOrderOnTop(true);
-        L.d(TAG,"width="+localParent.getWidth()+",height="+localParent.getHeight());
+//        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) localParent.getLayoutParams();
+//        params.leftMargin = x;
+//        params.topMargin = y;
+//        params.width = width;
+//        params.height = height;
+//        localParent.setLayoutParams(params);
+//        localParent.invalidate();
+//        //  selfSurface.setZOrderOnTop(true);
+//        L.d(TAG,"width="+localParent.getWidth()+",height="+localParent.getHeight());
     }
 }

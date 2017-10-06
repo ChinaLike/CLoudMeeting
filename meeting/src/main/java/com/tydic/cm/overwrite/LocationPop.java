@@ -11,14 +11,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.R;
+import com.tydic.cm.bean.LocationEventBus;
 import com.tydic.cm.model.inf.OnLocationListener;
 import com.tydic.cm.util.ScreenUtil;
 import com.tydic.cm.util.T;
+
+import org.greenrobot.eventbus.EventBus;
 
 /**
  * Created by like on 2017-09-25
@@ -45,8 +47,11 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
      */
     private int oldPos = -1;
 
-    public LocationPop(Context context,int showNum) {
+    private int showNum = 0;
+
+    public LocationPop(Context context, int showNum) {
         this.mContext = context;
+        this.showNum = showNum;
         init(showNum);
     }
 
@@ -66,6 +71,7 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
 
     /**
      * 设置原来的位置
+     *
      * @param oldPos
      */
     public void setOldPos(int oldPos) {
@@ -152,7 +158,6 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
     }
 
 
-
     public void setOnLocationListener(OnLocationListener onLocationListener) {
         this.onLocationListener = onLocationListener;
     }
@@ -161,23 +166,37 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
     public void onClick(View view) {
         if (onLocationListener != null) {
             int id = view.getId();
+            int index = 0;
             if (id == R.id.text1) {
-                T.showShort("这个位置是你自己的视频哦！");
-                //onLocationListener.loacation(oldPos, 0);
+                index = 0;
+             //  onLocationListener.loacation(oldPos, 0);
             } else if (id == R.id.text2) {
-                onLocationListener.loacation(oldPos, 1);
+                index = 1;
+                // onLocationListener.loacation(oldPos, 1);
             } else if (id == R.id.text3) {
-                onLocationListener.loacation(oldPos, 2);
+                index = 2;
+                // onLocationListener.loacation(oldPos, 2);
             } else if (id == R.id.text4) {
-                onLocationListener.loacation(oldPos, 3);
+                index = 3;
+              //  onLocationListener.loacation(oldPos, 3);
             } else if (id == R.id.text5) {
-                onLocationListener.loacation(oldPos, 4);
+                index = 4;
+                // onLocationListener.loacation(oldPos, 4);
             } else if (id == R.id.text6) {
-                onLocationListener.loacation(oldPos, 5);
+                index = 5;
+                //  onLocationListener.loacation(oldPos, 5);
             } else if (id == R.id.text7) {
-                onLocationListener.loacation(oldPos, 6);
+                index = 6;
+                //  onLocationListener.loacation(oldPos, 6);
             } else if (id == R.id.text8) {
-                onLocationListener.loacation(oldPos, 7);
+                index = 7;
+                //  onLocationListener.loacation(oldPos, 7);
+            }
+            if (showNum > index) {
+                onLocationListener.loacation(oldPos, index);
+                EventBus.getDefault().post(new LocationEventBus(oldPos,index));
+            } else {
+                T.showShort("设置位置不能超过当前最大数目哦！");
             }
             dismiss();
         }
