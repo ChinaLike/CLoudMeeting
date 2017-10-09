@@ -189,5 +189,6 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
     @Override
     public void onError(int type, int code) {
         T.showShort("获取在线人员列表数据异常");
+        dismiss();
     }
 }

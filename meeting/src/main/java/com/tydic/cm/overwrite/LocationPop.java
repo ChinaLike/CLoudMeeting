@@ -10,17 +10,14 @@ import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.R;
-import com.tydic.cm.bean.LocationEventBus;
+import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.model.inf.OnLocationListener;
 import com.tydic.cm.util.ScreenUtil;
 import com.tydic.cm.util.T;
-
-import org.greenrobot.eventbus.EventBus;
 
 /**
  * Created by like on 2017-09-25
@@ -35,10 +32,6 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
      */
     private OnLocationListener onLocationListener;
     /**
-     * 控件大小及位置
-     */
-    private LinearLayout.LayoutParams layoutParams;
-    /**
      * 文本显示区域
      */
     private TextView text1, text2, text3, text4, text5, text6, text7, text8;
@@ -48,6 +41,8 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
     private int oldPos = -1;
 
     private int showNum = 0;
+
+    private UsersBean bean;
 
     public LocationPop(Context context, int showNum) {
         this.mContext = context;
@@ -76,6 +71,15 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
      */
     public void setOldPos(int oldPos) {
         this.oldPos = oldPos;
+    }
+
+    /**
+     * 需要切换的Bean
+     *
+     * @param bean
+     */
+    public void setBean(UsersBean bean) {
+        this.bean = bean;
     }
 
     private void initView(int showNum) {
@@ -169,7 +173,7 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
             int index = 0;
             if (id == R.id.text1) {
                 index = 0;
-             //  onLocationListener.loacation(oldPos, 0);
+                //  onLocationListener.loacation(oldPos, 0);
             } else if (id == R.id.text2) {
                 index = 1;
                 // onLocationListener.loacation(oldPos, 1);
@@ -178,7 +182,7 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
                 // onLocationListener.loacation(oldPos, 2);
             } else if (id == R.id.text4) {
                 index = 3;
-              //  onLocationListener.loacation(oldPos, 3);
+                //  onLocationListener.loacation(oldPos, 3);
             } else if (id == R.id.text5) {
                 index = 4;
                 // onLocationListener.loacation(oldPos, 4);
@@ -193,8 +197,7 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
                 //  onLocationListener.loacation(oldPos, 7);
             }
             if (showNum > index) {
-                onLocationListener.loacation(oldPos, index);
-                EventBus.getDefault().post(new LocationEventBus(oldPos,index));
+                onLocationListener.loacation(oldPos, index, bean);
             } else {
                 T.showShort("设置位置不能超过当前最大数目哦！");
             }

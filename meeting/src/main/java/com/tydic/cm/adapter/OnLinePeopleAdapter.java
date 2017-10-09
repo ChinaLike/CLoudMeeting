@@ -73,7 +73,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
     public void onBindViewHolder(OnLinePeopleViewHolder holder, final int position) {
         final UsersBean bean = mList.get(position);
         holder.tvName.setText(bean.getNickName());
-        holder.parent.setOnClickListener(new View.OnClickListener() {
+        holder.tvLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (beanJs.getIsBroadcastMode().equals("0") && onItemClickListener != null) {
@@ -150,9 +150,9 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
         }
 
         if (!canCtrl) {
-            holder.tvSpeak.setVisibility(View.GONE);
-            holder.tvVideo.setVisibility(View.GONE);
-            holder.tvSpeaker.setVisibility(View.GONE);
+            holder.tvSpeak.setVisibility(View.INVISIBLE);
+            holder.tvVideo.setVisibility(View.INVISIBLE);
+            holder.tvSpeaker.setVisibility(View.INVISIBLE);
         } else {
             holder.tvSpeak.setVisibility(View.VISIBLE);
             holder.tvVideo.setVisibility(View.VISIBLE);
@@ -206,7 +206,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
     class OnLinePeopleViewHolder extends RecyclerView.ViewHolder {
 
         ImageView iv;
-        TextView tvName, tvSpeaker, tvVideo, tvSpeak;
+        TextView tvName, tvSpeaker, tvVideo, tvSpeak , tvLocation;
         LinearLayout parent;
 
         public OnLinePeopleViewHolder(View itemView) {
@@ -216,6 +216,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
             tvSpeaker = itemView.findViewById(R.id.tvSpeaker);
             tvVideo = itemView.findViewById(R.id.tvVideo);
             tvSpeak = itemView.findViewById(R.id.tvSpeak);
+            tvLocation = itemView.findViewById(R.id.tvLocation);
             parent = itemView.findViewById(R.id.parent);
         }
     }

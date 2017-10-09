@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.tydic.cm.R;
+import com.tydic.cm.base.BaseActivity;
 import com.tydic.cm.bean.SurfaceBean;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
@@ -49,8 +50,6 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
     private int column = 1;
 
     private int selfID;
-
-    private int[] testColor = new int[]{Color.RED, Color.BLUE, Color.GRAY, Color.RED, Color.BLUE, Color.GRAY, Color.RED, Color.BLUE, Color.GRAY};
 
     public SurfaceAdapter(Context mContext, List<UsersBean> mList) {
         this.mContext = mContext;
@@ -170,12 +169,12 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
      * 初始化宽高
      */
     private void initWH() {
-        if (mList == null || mList.size() == 0 || mList.size() == 1) {
+        if (BaseActivity.MAX_VIDEO_SHOW_NUMBER == 1) {
             width = ScreenUtil.getScreenWidth(mContext);
             height = ScreenUtil.getScreenHeight(mContext);
             return;
         }
-        int size = mList.size();
+        int size = BaseActivity.MAX_VIDEO_SHOW_NUMBER;
         if (size > 1 && size <= 4) {
             //4屛
             width = (int) (ScreenUtil.getScreenWidth(mContext) / 2 + 0.5);

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parent"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:id="@+id/parent"
     android:background="@android:color/transparent"
     android:orientation="vertical">
 
@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/iv"
@@ -37,32 +38,39 @@
             android:id="@+id/tvSpeaker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="10dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
+            android:layout_marginLeft="10dp"
+
             android:textColor="@color/meeting_list_yellow"
+            android:textSize="12sp"
             tools:text="主讲人" />
 
         <TextView
             android:id="@+id/tvVideo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
+            android:layout_marginLeft="10dp"
             android:textColor="@color/meeting_list_yellow"
+            android:textSize="12sp"
             tools:text="视频" />
 
         <TextView
             android:id="@+id/tvSpeak"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
+            android:layout_marginLeft="10dp"
             android:textColor="@color/meeting_list_yellow"
+            android:textSize="12sp"
             tools:text="取消发言" />
+
+        <TextView
+            android:id="@+id/tvLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="视频设置"
+            android:textColor="@color/meeting_list_yellow"
+            android:textSize="12sp" />
+
     </LinearLayout>
 
     <View

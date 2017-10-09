@@ -13,7 +13,6 @@ import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.bairuitech.anychat.AnyChatObjectEvent;
 import com.bairuitech.anychat.AnyChatTransDataEvent;
-import com.bairuitech.anychat.AnyChatUserInfoEvent;
 import com.bairuitech.anychat.AnyChatVideoCallEvent;
 import com.google.gson.Gson;
 import com.tydic.cm.bean.JsParamsBean;
@@ -34,8 +33,8 @@ import java.util.Map;
  * Created by like on 2017-09-20
  */
 
-public abstract class BaseActivity extends AppCompatActivity implements AnyChatInit.LoginCallBack ,
-        OnRequestListener,AnyChatBaseEvent,AnyChatObjectEvent,AnyChatVideoCallEvent, AnyChatTransDataEvent {
+public abstract class BaseActivity extends AppCompatActivity implements AnyChatInit.LoginCallBack,
+        OnRequestListener, AnyChatBaseEvent, AnyChatObjectEvent, AnyChatVideoCallEvent, AnyChatTransDataEvent {
 
     protected static final String TAG = "视频会议";
 
@@ -71,10 +70,19 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
     protected int selfUserId;
 
     protected String anyChatUserId;
-
+    /**
+     * 麦克风状态
+     */
     protected String micState = "1";
+    /**
+     * 摄像头状态
+     */
     protected String videoState = "2";
     protected int displayMode = 1;
+    /**
+     * 最大一页视频显示数目
+     */
+    public final static int MAX_VIDEO_SHOW_NUMBER = 4;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -98,7 +106,7 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         if (anychat == null) {
             anychat = AnyChatCoreSDK.getInstance(this);
         }
-        mAnyChatInit = new AnyChatInit(mContext,this);
+        mAnyChatInit = new AnyChatInit(mContext, this);
 
     }
 
@@ -134,7 +142,7 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
     /**
      * 初始化音视频参数
      */
-    private void initAV(){
+    private void initAV() {
         if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
             if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
                 AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
@@ -156,7 +164,7 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
     }
 
-    private void initSDK(){
+    private void initSDK() {
 
         anychat.mSensorHelper.InitSensor(mContext);
         AnyChatCoreSDK.mCameraHelper.SetContext(mContext);
@@ -203,6 +211,7 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
     /**
      * 当前房间在线用户消息，进入房间成功后调用一次。dwUserNum当前房间总人数（包括自	己）
+     *
      * @param dwUserNum
      * @param dwRoomId
      */
@@ -213,6 +222,7 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
     /**
      * 业务对象回调事件，调用AnyChatCoreSDk.ObjectControl方法触发这个回调
+     *
      * @param dwObjectType
      * @param dwObjectId
      * @param dwEventType
