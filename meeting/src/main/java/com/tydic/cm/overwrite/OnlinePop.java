@@ -19,7 +19,6 @@ import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.R;
 import com.tydic.cm.adapter.OnLinePeopleAdapter;
 import com.tydic.cm.bean.JsParamsBean;
-import com.tydic.cm.bean.LocationEventBus;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
 import com.tydic.cm.model.RetrofitMo;
@@ -27,9 +26,6 @@ import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnRequestListener;
 import com.tydic.cm.util.ScreenUtil;
 import com.tydic.cm.util.T;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,15 +42,12 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
     private RecyclerView recyclerView;
     private List<UsersBean> list = new ArrayList<>();
     private OnLinePeopleAdapter adapter;
-//    public static int PRIMARYUSERONLINE = 0;
-
     private RetrofitMo mRetrofitMo;//数据获取
 
     private JsParamsBean bean;//RN传递过来的数据
 
     public OnlinePop(Activity context, JsParamsBean bean) {
         this.bean = bean;
-        EventBus.getDefault().register(this);
         View view = LayoutInflater.from(context).inflate(R.layout.pop_online_list, null);
         setContentView(view);
         tvNum = view.findViewById(R.id.tvNum);
@@ -131,54 +124,10 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
         });
     }
 
-    /**
-     * EventBus订阅
-     */
-    @Subscribe
-    public void location(LocationEventBus event) {
-        int oldPos = event.getOldPos();
-        int newPos = event.getNewPos();
-        if (list.size() == 0) {
-            return;
-        }
-        UsersBean oldBean = list.get(oldPos);
-        if (list.remove(oldBean)) {
-            list.add(newPos, oldBean);
-            adapter.notifyDataSetChanged();
-        }
-
-    }
-
-//    @Subscribe
-//    public void toastSetSpeakerInfo(PrimarySpeakerInfo primarySpeakerInfo) {
-//        Context context = getContentView().getContext();
-//        String userId = CacheUtil.get(context).getAsString(Constants.ANYCHAT_USER_ID);
-//        for (int i = 0; i < list.size(); i++) {
-//            MeetingUserListInfo.DataBean dataBean = list.get(i);
-//            if (dataBean.getUserId().equals(primarySpeakerInfo.userId)) {
-//                String msg;
-//                if (userId.equals(primarySpeakerInfo.userId)) {
-//                    msg = "您被设置为主讲人";
-//                } else {
-//                    msg = String.format("%s被设置为主讲人", dataBean.getNickName());
-//                }
-//                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-//                break;
-//            }
-//        }
-//    }
-
     @Override
     public void onSuccess(int type, Object obj) {
         if (type == Key.ON_LINE_USER) {
             List<UsersBean> mList = (List<UsersBean>) obj;
-//            for (int i = 0; i < mList.size(); i++) {
-//                if (mList.get(i).getIsPrimarySpeaker().equals("1")) {
-//                    PRIMARYUSERONLINE = 0;
-//                } else {
-//                    PRIMARYUSERONLINE = 1;
-//                }
-//            }
             tvNum.setText("参会人员(" + mList.size() + ")");
             list.clear();
             list.addAll(mList);

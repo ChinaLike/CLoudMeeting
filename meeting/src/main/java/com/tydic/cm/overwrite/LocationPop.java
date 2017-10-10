@@ -7,23 +7,29 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-import android.widget.TextView;
 
 import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.R;
+import com.tydic.cm.adapter.LocationAdapter;
 import com.tydic.cm.bean.UsersBean;
+import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnLocationListener;
 import com.tydic.cm.util.ScreenUtil;
 import com.tydic.cm.util.T;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by like on 2017-09-25
  */
 
-public class LocationPop extends RelativePopupWindow implements View.OnClickListener {
+public class LocationPop extends RelativePopupWindow implements OnItemClickListener {
 
 
     private Context mContext;
@@ -32,21 +38,20 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
      */
     private OnLocationListener onLocationListener;
     /**
-     * 文本显示区域
-     */
-    private TextView text1, text2, text3, text4, text5, text6, text7, text8;
-    /**
      * 切换位置前
      */
     private int oldPos = -1;
 
-    private int showNum = 0;
-
     private UsersBean bean;
+    /**
+     * 位置显示列表
+     */
+    private RecyclerView recyclerView;
+
+    private LocationAdapter adapter;
 
     public LocationPop(Context context, int showNum) {
         this.mContext = context;
-        this.showNum = showNum;
         init(showNum);
     }
 
@@ -83,25 +88,30 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
     }
 
     private void initView(int showNum) {
-        View view = new View(mContext);
+        View view = LayoutInflater.from(mContext).inflate(R.layout.layout_location, null, false);
+        recyclerView = view.findViewById(R.id.location_recy);
+        List<String> list = new ArrayList<>();
+        int clounm = 0;
         if (showNum == 0) {
             T.showShort("没有位置可以设置！");
         } else if (showNum == 1) {
             T.showShort("一个人不能设置位置哦！");
         } else if (showNum > 1 && showNum <= 4) {
-            view = LayoutInflater.from(mContext).inflate(R.layout.layout_four_location, null, false);
-            initFour(view);
+            clounm = 4;
         } else if (showNum > 4 && showNum <= 6) {
-            view = LayoutInflater.from(mContext).inflate(R.layout.layout_six_location, null, false);
-            initFour(view);
-            initSix(view);
+            clounm = 6;
         } else if (showNum > 6 && showNum <= 8) {
-            view = LayoutInflater.from(mContext).inflate(R.layout.layout_eight_loaction, null, false);
-            initFour(view);
-            initSix(view);
-            initEight(view);
+            clounm = 8;
+
         }
         setContentView(view);
+        for (int i = 0; i < clounm; i++) {
+            list.add((i + 1) + "");
+        }
+        adapter = new LocationAdapter(list, mContext, this);
+        GridLayoutManager manager = new GridLayoutManager(mContext, clounm / 2);
+        recyclerView.setLayoutManager(manager);
+        recyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -136,72 +146,15 @@ public class LocationPop extends RelativePopupWindow implements View.OnClickList
         });
     }
 
-    private void initFour(View view) {
-        text1 = view.findViewById(R.id.text1);
-        text1.setOnClickListener(this);
-        text2 = view.findViewById(R.id.text2);
-        text2.setOnClickListener(this);
-        text3 = view.findViewById(R.id.text3);
-        text3.setOnClickListener(this);
-        text4 = view.findViewById(R.id.text4);
-        text4.setOnClickListener(this);
-    }
-
-    private void initSix(View view) {
-        text5 = view.findViewById(R.id.text5);
-        text5.setOnClickListener(this);
-        text6 = view.findViewById(R.id.text6);
-        text6.setOnClickListener(this);
-    }
-
-    private void initEight(View view) {
-        text7 = view.findViewById(R.id.text7);
-        text7.setOnClickListener(this);
-        text8 = view.findViewById(R.id.text8);
-        text8.setOnClickListener(this);
-    }
-
-
     public void setOnLocationListener(OnLocationListener onLocationListener) {
         this.onLocationListener = onLocationListener;
     }
 
     @Override
-    public void onClick(View view) {
+    public void onItemClick(int position, UsersBean bean) {
+        dismiss();
         if (onLocationListener != null) {
-            int id = view.getId();
-            int index = 0;
-            if (id == R.id.text1) {
-                index = 0;
-                //  onLocationListener.loacation(oldPos, 0);
-            } else if (id == R.id.text2) {
-                index = 1;
-                // onLocationListener.loacation(oldPos, 1);
-            } else if (id == R.id.text3) {
-                index = 2;
-                // onLocationListener.loacation(oldPos, 2);
-            } else if (id == R.id.text4) {
-                index = 3;
-                //  onLocationListener.loacation(oldPos, 3);
-            } else if (id == R.id.text5) {
-                index = 4;
-                // onLocationListener.loacation(oldPos, 4);
-            } else if (id == R.id.text6) {
-                index = 5;
-                //  onLocationListener.loacation(oldPos, 5);
-            } else if (id == R.id.text7) {
-                index = 6;
-                //  onLocationListener.loacation(oldPos, 6);
-            } else if (id == R.id.text8) {
-                index = 7;
-                //  onLocationListener.loacation(oldPos, 7);
-            }
-            if (showNum > index) {
-                onLocationListener.loacation(oldPos, index, bean);
-            } else {
-                T.showShort("设置位置不能超过当前最大数目哦！");
-            }
-            dismiss();
+            onLocationListener.loacation(oldPos, position, this.bean);
         }
     }
 }

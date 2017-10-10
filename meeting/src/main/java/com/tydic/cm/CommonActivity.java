@@ -178,9 +178,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         try {
             String receiveMsg = new String(lpBuf, "utf-8");
             L.d(TAG, "OnAnyChatTransBuffer:lpBuf=" + receiveMsg + ",dwLen=" + dwLen);
-            //获取用户状态
-            //     mRetrofitMo.userState(mJsParamsBean.getRoomId(), mJsParamsBean.getFeedId(), this);
-
+           
             if (receiveMsg.contains(" ")) {
                 return;
             } else {
@@ -339,8 +337,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     @Override
     public void OnAnyChatUserAtRoomMessage(int dwUserId, boolean bEnter) {
         L.d(TAG, "OnAnyChatUserAtRoomMessage:dwUserId=" + dwUserId + ",bEnter=" + bEnter);
-        //获取在线人员,每当有人进入或退出时获取一次
-        // mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+
         if (bEnter) {
             //有人进入房间
             enterRoom(dwUserId);
@@ -377,18 +374,10 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                     bean.setUserId(dwUserId + "");
                     bean.setAudioStatus(Key.AUDIO_OPEN);
                     bean.setVideoStatus(Key.VIDEO_OPEN);
-                    //  surfaceBeanList.add(bean);
-//                    adapter.notifyDataSetChanged();
                     adapter.notifyItemChanged(i);
                     return;
                 }
             }
-//            UsersBean bean = new UsersBean();
-//            bean.setUserId(dwUserId + "");
-//            bean.setAudioStatus(Key.AUDIO_OPEN);
-//            bean.setVideoStatus(Key.VIDEO_OPEN);
-//            surfaceBeanList.add(bean);
-//            adapter.notifyDataSetChanged();
         }
     }
 
@@ -399,10 +388,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * @return
      */
     private void exitRoom(int dwUserId) {
-        //    UsersBean removeBean = null;
         for (UsersBean bean : surfaceBeanList) {
             if (Integer.parseInt(bean.getUserId()) == dwUserId) {
-                //     removeBean = bean;
                 bean.setUserId("0");
                 int index = surfaceBeanList.indexOf(bean);
                 adapter.notifyItemChanged(index);
@@ -511,17 +498,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                             surfaceBeanList.add(emptyBean);
                         }
                     }
-
-
-//                    for (UsersBean item : (List<UsersBean>) obj) {
-//                        if (Integer.parseInt(item.getUserId()) == selfUserId) {
-//                            item.setAudioStatus(userState.getAudioStatus());
-//                            item.setVideoStatus(userState.getVideoStatus());
-//                            surfaceBeanList.add(item);
-//                        } else {
-//                            surfaceBeanList.add(item);
-//                        }
-//                    }
                 }
                 resetAdapter(surfaceBeanList.size());
             case Key.SEND_MESSAGE:
@@ -711,6 +687,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     @Override
     public void loacation(int oldPos, int newPos, UsersBean bean) {
         // T.showShort("从" + oldPos + "位置切换到" + newPos + "位置");
+
         if (oldPos == newPos) {
             //处理位置没有变化
             T.showShort("当前位置没有变化哦！");
@@ -718,14 +695,26 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         }
         if (oldPos == -1) {
             //表示在显示之外的用户切换到界面
+            int newId = Integer.parseInt(surfaceBeanList.get(newPos).getUserId());
             surfaceBeanList.remove(newPos);
             surfaceBeanList.add(newPos, bean);
+            if (newId != selfUserId){
+                adapter.notifyItemChanged(newPos);
+            }else {
+                initAdapter(showNum);
+            }
         } else {
             //交换位置
+            int newId = Integer.parseInt(surfaceBeanList.get(newPos).getUserId());
+            int oldId = Integer.parseInt(surfaceBeanList.get(oldPos).getUserId());
             CollectionsUtil.swap1(surfaceBeanList, oldPos, newPos);
-
+            if (newId != selfUserId && oldId != selfUserId){
+                adapter.notifyItemChanged(newPos);
+                adapter.notifyItemChanged(oldPos);
+            }else {
+                initAdapter(showNum);
+            }
         }
-        initAdapter(showNum);
     }
 
     /**
