@@ -253,15 +253,13 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         UsersBean bean = new UsersBean();
                         bean.setUserId(speaker + "");
                         bean.setVideoStatus(Key.VIDEO_OPEN);
+                        bean.setAudioStatus(Key.AUDIO_OPEN);
                         if (speaker == selfUserId) {
                             T.showShort("你被设置为主讲人了！");
-                            bean.setAudioStatus(Key.AUDIO_OPEN);
                             refreshMic(Key.AUDIO_OPEN);
                         } else {
                             //主讲人是别人
-                            bean.setAudioStatus(Key.AUDIO_CLOSE);
                             refreshMic(Key.AUDIO_CLOSE);
-                            anychat.UserSpeakControl(speaker, 1);
                             for (UsersBean item : surfaceBeanList) {
                                 if (Integer.parseInt(item.getUserId()) == speaker) {
                                     T.showShort(item.getNickName() + "被设置为主讲人了！");

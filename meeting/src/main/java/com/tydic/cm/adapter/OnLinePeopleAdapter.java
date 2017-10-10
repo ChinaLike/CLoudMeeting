@@ -91,6 +91,8 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
                         return;
                     }
                     sendMicMsg(index);
+                    //关闭弹窗
+                    dismissDialog();
                 } else {
                     T.showShort("您无权进行此操作");
                 }
@@ -115,6 +117,8 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
                         return;
                     }
                     sendCameraMsg(index);
+                    //关闭弹窗
+                    dismissDialog();
                 } else {
                     T.showShort("您无权进行此操作");
                 }
@@ -137,6 +141,8 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
                         return;
                     }
                     sendSpeakerMsg(index);
+                    //关闭弹窗
+                    dismissDialog();
                 } else {
                     T.showShort("您无权进行此操作");
                 }
@@ -206,7 +212,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
     class OnLinePeopleViewHolder extends RecyclerView.ViewHolder {
 
         ImageView iv;
-        TextView tvName, tvSpeaker, tvVideo, tvSpeak , tvLocation;
+        TextView tvName, tvSpeaker, tvVideo, tvSpeak, tvLocation;
         LinearLayout parent;
 
         public OnLinePeopleViewHolder(View itemView) {
@@ -277,6 +283,16 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
         userId = mList.get(position).getUserId();
         mRetrofitMo.sendMsg(userId, character, dataBean, 2, this);
 
+    }
+
+    /**
+     * 关闭弹窗
+     */
+    private void dismissDialog() {
+        if (progressDialog == null || !progressDialog.isShowing()) {
+            return;
+        }
+        progressDialog.dismiss();
     }
 
     /**
