@@ -169,12 +169,12 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
      * 初始化宽高
      */
     private void initWH() {
-        if (BaseActivity.MAX_VIDEO_SHOW_NUMBER == 1) {
+        if (mList == null || mList.size() == 0 || mList.size() == 1) {
             width = ScreenUtil.getScreenWidth(mContext);
             height = ScreenUtil.getScreenHeight(mContext);
             return;
         }
-        int size = BaseActivity.MAX_VIDEO_SHOW_NUMBER;
+        int size = mList.size();
         if (size > 1 && size <= 4) {
             //4屛
             width = (int) (ScreenUtil.getScreenWidth(mContext) / 2 + 0.5);

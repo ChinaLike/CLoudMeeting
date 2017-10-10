@@ -246,17 +246,22 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                     //userId为0表示取消主讲人
                     if ("0".equals(arr[1])) {
                         T.showShort("已取消主讲人");
+                        refreshMic(Key.AUDIO_OPEN);
                         mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
                     } else {
                         int speaker = Integer.parseInt(arr[1]);
                         UsersBean bean = new UsersBean();
                         bean.setUserId(speaker + "");
-                        bean.setAudioStatus(Key.AUDIO_OPEN);
                         bean.setVideoStatus(Key.VIDEO_OPEN);
                         if (speaker == selfUserId) {
                             T.showShort("你被设置为主讲人了！");
+                            bean.setAudioStatus(Key.AUDIO_OPEN);
+                            refreshMic(Key.AUDIO_OPEN);
                         } else {
                             //主讲人是别人
+                            bean.setAudioStatus(Key.AUDIO_CLOSE);
+                            refreshMic(Key.AUDIO_CLOSE);
+                            anychat.UserSpeakControl(speaker, 1);
                             for (UsersBean item : surfaceBeanList) {
                                 if (Integer.parseInt(item.getUserId()) == speaker) {
                                     T.showShort(item.getNickName() + "被设置为主讲人了！");
@@ -267,7 +272,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         surfaceBeanList.clear();
                         surfaceBeanList.add(bean);
                         initAdapter(1);
-//                        adapter.notifyDataSetChanged();
                     }
                     break;
                 default:
@@ -280,6 +284,24 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * 刷新麦克风状态
+     */
+    private void refreshMic(String mic) {
+        micState = mic;
+        if (micState.equals(Key.AUDIO_OPEN)) {
+            microphone.setImageResource(R.drawable.img_meeting_microphone);
+            anychat.UserSpeakControl(-1, 1);
+            isSpeaking = true;
+        } else {
+            microphone.setImageResource(R.drawable.meeting_microphone_disable);
+            anychat.UserSpeakControl(-1, 0);
+            isSpeaking = false;
+        }
+        //更新状态
+        feedbackState(Key.UPDATE_CLIENT_STATUS);
     }
 
     /**
@@ -389,10 +411,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 break;
             }
         }
-//        if (removeBean != null) {
-//            surfaceBeanList.remove(removeBean);
-//            adapter.notifyDataSetChanged();
-//        }
     }
 
     /**
@@ -444,6 +462,11 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     private UsersBean getSpeaker(List<UsersBean> list) {
         for (UsersBean bean : list) {
             if (bean.getIsPrimarySpeaker().equals(Key.SPEAKER)) {
+                if (Integer.parseInt(bean.getUserId()) != selfUserId) {
+                    refreshMic(Key.AUDIO_CLOSE);
+                } else {
+                    refreshMic(Key.AUDIO_OPEN);
+                }
                 return bean;
             }
         }
@@ -518,7 +541,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * @param size
      */
     private void resetAdapter(int size) {
-        GridLayoutManager manager = null;
         if (size > 1 && size <= 4) {
             showNum = 2;
         } else if (size > 4 && size <= 6) {
@@ -529,11 +551,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             showNum = 1;
         }
         initAdapter(showNum);
-//        manager = new GridLayoutManager(mContext, showNum);
-//        adapter.setColumn(showNum);
-//        adapter.setSelfID(selfUserId);
-//        recyclerView.setLayoutManager(manager);
-//        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -548,8 +565,10 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         //设置语音状态
         if (userState.getAudioStatus().equals(Key.AUDIO_OPEN)) {
             microphone.setImageResource(R.drawable.img_meeting_microphone);
+            isSpeaking = true;
         } else {
             microphone.setImageResource(R.drawable.meeting_microphone_disable);
+            isSpeaking = false;
         }
         //设置摄像头状态
         if (userState.getVideoStatus().equals(Key.VIDEO_OPEN)) {
@@ -589,20 +608,13 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                     //执行关闭摄像头
                     userState.setVideoStatus("1");
                     videoState = "1";
-                    //  feedbackState(Key.UPDATE_CLIENT_STATUS);
-                    //  cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
-                    //  anychat.UserCameraControl(-1, 0);
                 } else {
                     //执行打开摄像头
                     userState.setVideoStatus("2");
                     videoState = "2";
-                    //     feedbackState(Key.UPDATE_CLIENT_STATUS);
-                    //    cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
-                    //  anychat.UserCameraControl(-1, 1);
                 }
                 feedbackState(Key.UPDATE_CLIENT_STATUS);
                 setLocalImageState();
-                //  mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
                 isOpenCamera = !isOpenCamera;
             } else {
                 //没有摄像头
@@ -617,14 +629,12 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             if (isSpeaking) {
                 userState.setAudioStatus("0");
                 micState = "0";
-                //  feedbackState(Key.UPDATE_CLIENT_STATUS);
                 microphone.setImageResource(R.drawable.meeting_microphone_disable);
                 anychat.UserSpeakControl(-1, 0);
             } else {
                 microphone.setImageResource(R.drawable.img_meeting_microphone);
                 userState.setAudioStatus("1");
                 micState = "1";
-                //  feedbackState(Key.UPDATE_CLIENT_STATUS);
                 anychat.UserSpeakControl(-1, 1);
             }
             feedbackState(Key.UPDATE_CLIENT_STATUS);
@@ -683,8 +693,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         mLocationPop = new LocationPop(this, surfaceBeanList.size());
         mLocationPop.setOnLocationListener(this);
         int oldPos = -1;
-        for (UsersBean item :surfaceBeanList) {
-            if (bean.getUserId().equals(item.getUserId())){
+        for (UsersBean item : surfaceBeanList) {
+            if (bean.getUserId().equals(item.getUserId())) {
                 oldPos = surfaceBeanList.indexOf(item);
             }
         }
@@ -701,20 +711,20 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * @param newPos
      */
     @Override
-    public void loacation(int oldPos, int newPos , UsersBean bean) {
-         // T.showShort("从" + oldPos + "位置切换到" + newPos + "位置");
+    public void loacation(int oldPos, int newPos, UsersBean bean) {
+        // T.showShort("从" + oldPos + "位置切换到" + newPos + "位置");
         if (oldPos == newPos) {
             //处理位置没有变化
             T.showShort("当前位置没有变化哦！");
             return;
         }
-        if (oldPos == -1){
+        if (oldPos == -1) {
             //表示在显示之外的用户切换到界面
             surfaceBeanList.remove(newPos);
-            surfaceBeanList.add(newPos,bean);
-        }else {
+            surfaceBeanList.add(newPos, bean);
+        } else {
             //交换位置
-            CollectionsUtil.swap1(surfaceBeanList,oldPos,newPos);
+            CollectionsUtil.swap1(surfaceBeanList, oldPos, newPos);
 
         }
         initAdapter(showNum);
