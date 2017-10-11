@@ -5,6 +5,8 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -34,7 +36,8 @@ import java.util.Map;
  */
 
 public abstract class BaseActivity extends AppCompatActivity implements AnyChatInit.LoginCallBack,
-        OnRequestListener, AnyChatBaseEvent, AnyChatObjectEvent, AnyChatVideoCallEvent, AnyChatTransDataEvent {
+        OnRequestListener, AnyChatBaseEvent, AnyChatObjectEvent, AnyChatVideoCallEvent, AnyChatTransDataEvent
+{
 
     protected static final String TAG = "视频会议";
 
@@ -194,6 +197,40 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
             return;
         } else {
             AnyChatCoreSDK.getInstance(this).UserInfoControl(Integer.parseInt(anyChatUserId), code, 0, 0, info);
+        }
+    }
+
+    /**
+     * 初始化通用配置
+     */
+    protected void initSurfaceSDK() {
+        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
+            if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
+                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
+            }
+        } else {
+            String[] strVideoCaptures = anychat.EnumVideoCapture();
+            if (strVideoCaptures != null && strVideoCaptures.length > 1) {
+                for (int i = 0; i < strVideoCaptures.length; i++) {
+                    String strDevices = strVideoCaptures[i];
+                    if (strDevices.indexOf("Front") >= 0) {
+                        anychat.SelectVideoCapture(strDevices);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 初始化本地
+     * @param selfSurface
+     */
+    protected void initLocalSurface(SurfaceView selfSurface) {
+        // 视频如果是采用java采集
+        selfSurface.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
+            selfSurface.getHolder().addCallback(AnyChatCoreSDK.mCameraHelper);
         }
     }
 

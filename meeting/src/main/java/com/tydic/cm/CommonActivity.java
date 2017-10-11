@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -12,12 +11,13 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
-import com.bairuitech.anychat.AnyChatDefine;
 import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.adapter.SurfaceAdapter;
 import com.tydic.cm.base.BaseActivity;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
+import com.tydic.cm.model.Audio;
+import com.tydic.cm.model.Video;
 import com.tydic.cm.model.inf.LocalHelper;
 import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnLocationListener;
@@ -81,6 +81,14 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * 适配数据
      */
     private List<UsersBean> surfaceBeanList = new ArrayList<>();
+    /**
+     * 音频控制
+     */
+    private Audio audio;
+    /**
+     * 视频控制
+     */
+    private Video video;
 
 
     @Override
@@ -90,6 +98,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         mOnlinePop = new OnlinePop(this, mJsParamsBean);
         mOnlinePop.onLineUser();
         mOnlinePop.setOnItemClickListener(this);
+        audio = new Audio(anychat, this);
+        video = new Video(anychat, this);
         //初始化控件
         initView();
         //通用配置
@@ -97,7 +107,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         //初始化适配器
         initAdapter(showNum);
         //初始化本地视频
-        initLocalSurface();
+        initLocalSurface(selfSurface);
     }
 
     /**
@@ -135,36 +145,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
 
-    }
-
-    /**
-     * 初始化通用配置
-     */
-    private void initSurfaceSDK() {
-        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-            if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
-                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
-            }
-        } else {
-            String[] strVideoCaptures = anychat.EnumVideoCapture();
-            if (strVideoCaptures != null && strVideoCaptures.length > 1) {
-                for (int i = 0; i < strVideoCaptures.length; i++) {
-                    String strDevices = strVideoCaptures[i];
-                    if (strDevices.indexOf("Front") >= 0) {
-                        anychat.SelectVideoCapture(strDevices);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    private void initLocalSurface() {
-        // 视频如果是采用java采集
-        selfSurface.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-            selfSurface.getHolder().addCallback(AnyChatCoreSDK.mCameraHelper);
-        }
     }
 
     @Override
@@ -326,6 +306,17 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     }
 
     /**
+     * 根据本地状态，判断是否打开远程声音
+     */
+    private void refreshDistanceAudio(UsersBean bean) {
+        if (isSound) {
+            bean.setAudioStatus(Key.AUDIO_OPEN);
+        } else {
+            bean.setAudioStatus(Key.AUDIO_CLOSE);
+        }
+    }
+
+    /**
      * 进入房间成功
      *
      * @param dwRoomId
@@ -354,7 +345,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     /**
      * 当前房间用户离开或者进入房间触发这个回调，dwUserId用户  id," bEnter==true"表示进入房间,反之表示离开房间
-     * -
      *
      * @param dwUserId
      * @param bEnter
@@ -373,6 +363,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         if (mOnlinePop != null && mOnlinePop.isShowing()) {
             mOnlinePop.onLineUser();
         }
+
     }
 
     /**
@@ -397,8 +388,9 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 UsersBean bean = surfaceBeanList.get(i);
                 if (bean.getUserId().equals("0")) {
                     bean.setUserId(dwUserId + "");
-                    bean.setAudioStatus(Key.AUDIO_OPEN);
+                    refreshDistanceAudio(bean);
                     bean.setVideoStatus(Key.VIDEO_OPEN);
+                    bean.setIsPrimarySpeaker(Key.NO_SPEAKER);
                     adapter.notifyItemChanged(i);
                     return;
                 }
@@ -476,21 +468,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         feedbackState(Key.UPDATE_CLIENT_STATUS);
     }
 
-    /**
-     * 获取主讲人
-     *
-     * @param list
-     * @return
-     */
-    private UsersBean getSpeaker(List<UsersBean> list) {
-        for (UsersBean bean : list) {
-            if (Key.SPEAKER.equals(bean.getIsPrimarySpeaker())) {
-                return bean;
-            }
-        }
-        return null;
-    }
-
     @Override
     public void onSuccess(int type, Object obj) {
         switch (type) {
@@ -506,9 +483,10 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 //获取在线人员列表
                 L.d(TAG, "在线人员列表：" + obj.toString());
                 surfaceBeanList.clear();
-                UsersBean speaker = getSpeaker((List<UsersBean>) obj);
+                UsersBean speaker = mUserMo.getSpeaker((List<UsersBean>) obj);
                 if (speaker != null) {
                     //已有主讲人
+                    refreshDistanceAudio(speaker);
                     surfaceBeanList.add(speaker);
                     if (Integer.parseInt(speaker.getUserId()) != selfUserId) {
                         refreshMic(Key.AUDIO_CLOSE);//关闭语音
@@ -530,11 +508,17 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                                 surfaceBeanList.add(usersBean);
                             } else {
                                 //远程
+                                refreshDistanceAudio(usersBean);
                                 surfaceBeanList.add(usersBean);
                             }
                         } else {
                             //不足的地方补空位
                             UsersBean emptyBean = new UsersBean();
+                            refreshDistanceAudio(emptyBean);
+                            emptyBean.setVideoStatus(Key.VIDEO_CLOSE);
+                            emptyBean.setIsPrimarySpeaker(Key.NO_SPEAKER);
+                            emptyBean.setDisplayMode(0);
+                            emptyBean.setMeetingId(mJsParamsBean.getMeetingId());
                             emptyBean.setUserId("0");
                             surfaceBeanList.add(emptyBean);
                         }
@@ -577,14 +561,14 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * 设置本地状态
      */
     private void setLocalImageState() {
-        //设置语音状态
-        if (userState.getAudioStatus().equals(Key.AUDIO_OPEN)) {
-            microphone.setImageResource(R.drawable.img_meeting_microphone);
-            isSpeaking = true;
-        } else {
-            microphone.setImageResource(R.drawable.meeting_microphone_disable);
-            isSpeaking = false;
-        }
+//        //设置语音状态
+//        if (userState.getAudioStatus().equals(Key.AUDIO_OPEN)) {
+//            microphone.setImageResource(R.drawable.img_meeting_microphone);
+//            isSpeaking = true;
+//        } else {
+//            microphone.setImageResource(R.drawable.meeting_microphone_disable);
+//            isSpeaking = false;
+//        }
         //设置摄像头状态
         if (userState.getVideoStatus().equals(Key.VIDEO_OPEN)) {
             cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
@@ -656,18 +640,20 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             isSpeaking = !isSpeaking;
         } else if (id == R.id.meeting_sound) {
             //远程声音
-            int[] onlineUserCount = AnyChatCoreSDK.getInstance(this).GetOnlineUser();
-            int size = onlineUserCount.length;
+//            int[] onlineUserCount = AnyChatCoreSDK.getInstance(this).GetOnlineUser();
+//            int size = onlineUserCount.length;
             if (isSound) {
                 sound.setImageResource(R.drawable.meeting_speaker_disable);
-                for (int i = 0; i < size; i++) {
-                    anychat.UserSpeakControl(onlineUserCount[i], 0);
-                }
+//                for (int i = 0; i < size; i++) {
+//                    anychat.UserSpeakControl(onlineUserCount[i], 0);
+//                }
+                audio.closeDistanceAudio();
             } else {
                 sound.setImageResource(R.drawable.img_meeting_sound);
-                for (int i = 0; i < size; i++) {
-                    anychat.UserSpeakControl(onlineUserCount[i], 1);
-                }
+//                for (int i = 0; i < size; i++) {
+//                    anychat.UserSpeakControl(onlineUserCount[i], 1);
+//                }
+                audio.openDistanceAudio();
             }
             isSound = !isSound;
         }

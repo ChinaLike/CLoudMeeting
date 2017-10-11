@@ -2,11 +2,12 @@ package com.tydic.cm.model;
 
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.config.SurfaceConfig;
+import com.tydic.cm.constant.Key;
 
 import java.util.List;
 
 /**
- * 人员数据获取
+ * 指定人员数据
  * Created by like on 2017-09-19
  */
 
@@ -18,7 +19,7 @@ public class UserMo {
      * @param list 在线人员
      * @return
      */
-    public boolean isPrimarySpeaker(List<UsersBean> list) {
+    public boolean isHasSpeaker(List<UsersBean> list) {
         for (UsersBean bean : list) {
             if (bean.getIsPrimarySpeaker().equals("1")) {
                 return true;
@@ -28,41 +29,18 @@ public class UserMo {
     }
 
     /**
-     * 获取主讲人信息
+     * 获取主讲人
      *
-     * @param list 在线人员
-     * @return 主讲人信息
+     * @param list  在线人员
+     * @return  主讲人信息
      */
-    public UsersBean primarySpeaker(List<UsersBean> list) {
+    public UsersBean getSpeaker(List<UsersBean> list) {
         for (UsersBean bean : list) {
-            if (bean.getIsPrimarySpeaker().equals("1")) {
+            if (Key.SPEAKER.equals(bean.getIsPrimarySpeaker())) {
                 return bean;
             }
         }
         return null;
-    }
-
-    /**
-     * 配置界面显示视频数目
-     * @param size
-     */
-    public void configView(int size){
-        if (size < 4){
-            SurfaceConfig.COLUMN = size;
-            SurfaceConfig.ROW =1;
-        }else if (size ==4){
-            SurfaceConfig.COLUMN = 2;
-            SurfaceConfig.ROW =2;
-        }else if (size ==5 || size == 6){
-            SurfaceConfig.COLUMN = 3;
-            SurfaceConfig.ROW =2;
-        }else if (size ==7 || size == 8){
-            SurfaceConfig.COLUMN = 4;
-            SurfaceConfig.ROW =2;
-        }else if (size >8){
-            SurfaceConfig.COLUMN = 2;
-            SurfaceConfig.ROW =2;
-        }
     }
 
 }
