@@ -67,9 +67,10 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
         holder.parent.setLayoutParams(params);
         int userID = Integer.parseInt(bean.getUserId());
         //   holder.surfaceLayout.setBackgroundColor(testColor[position]);
+        initLocalSurface(position, bean);
         if (bean.getVideoStatus().equals(Key.VIDEO_OPEN)) {
             if (userID == selfID) {
-                initLocalSurface(position, bean);
+
                 // 视频如果是采用java采集
                 holder.surfaceLayout.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
                 if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {

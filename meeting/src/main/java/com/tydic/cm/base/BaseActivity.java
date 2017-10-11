@@ -253,37 +253,6 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
     }
 
-    /**
-     * 初始化视频参数
-     */
-    protected void initAudio() {
-
-        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-            if (AnyChatCoreSDK.mCameraHelper.GetCameraNumber() > 1) {
-                AnyChatCoreSDK.mCameraHelper.SelectVideoCapture(AnyChatCoreSDK.mCameraHelper.CAMERA_FACING_FRONT);
-            }
-        } else {
-            String[] strVideoCaptures = anychat.EnumVideoCapture();
-            if (strVideoCaptures != null && strVideoCaptures.length > 1) {
-                for (int i = 0; i < strVideoCaptures.length; i++) {
-                    String strDevices = strVideoCaptures[i];
-                    if (strDevices.indexOf("Front") >= 0) {
-                        anychat.SelectVideoCapture(strDevices);
-                        break;
-                    }
-                }
-            }
-        }
-
-        //设置本地视频采集随着设备的旋转而处理
-        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, 1);
-        //打开本地视频，第一个参数用-1表示本地，也可以用本地的真实userId
-        anychat.UserCameraControl(-1, 1);
-        //打开本地音频
-        anychat.UserSpeakControl(-1, 1);
-    }
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();

@@ -178,7 +178,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         try {
             String receiveMsg = new String(lpBuf, "utf-8");
             L.d(TAG, "OnAnyChatTransBuffer:lpBuf=" + receiveMsg + ",dwLen=" + dwLen);
-           
+
             if (receiveMsg.contains(" ")) {
                 return;
             } else {
@@ -244,7 +244,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                     //userId为0表示取消主讲人
                     if ("0".equals(arr[1])) {
                         T.showShort("已取消主讲人");
-                        refreshMic(Key.AUDIO_OPEN);
+                        refreshMic(Key.AUDIO_OPEN);//打开语音
+                        refreshCamera(Key.VIDEO_OPEN);//打开摄像头
                         mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
                     } else {
                         int speaker = Integer.parseInt(arr[1]);
@@ -254,10 +255,12 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         bean.setAudioStatus(Key.AUDIO_OPEN);
                         if (speaker == selfUserId) {
                             T.showShort("你被设置为主讲人了！");
-                            refreshMic(Key.AUDIO_OPEN);
+                            refreshMic(Key.AUDIO_OPEN);//打开语音
+                            refreshCamera(Key.VIDEO_OPEN);//打开摄像头
                         } else {
                             //主讲人是别人
-                            refreshMic(Key.AUDIO_CLOSE);
+                            refreshMic(Key.AUDIO_CLOSE);//关闭语音
+                            refreshCamera(Key.VIDEO_CLOSE);//关闭摄像头
                             for (UsersBean item : surfaceBeanList) {
                                 if (Integer.parseInt(item.getUserId()) == speaker) {
                                     T.showShort(item.getNickName() + "被设置为主讲人了！");
@@ -287,6 +290,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     private void refreshMic(String mic) {
         micState = mic;
+        userState.setAudioStatus(micState);
         if (micState.equals(Key.AUDIO_OPEN)) {
             microphone.setImageResource(R.drawable.img_meeting_microphone);
             anychat.UserSpeakControl(-1, 1);
@@ -295,6 +299,27 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             microphone.setImageResource(R.drawable.meeting_microphone_disable);
             anychat.UserSpeakControl(-1, 0);
             isSpeaking = false;
+        }
+        //更新状态
+        feedbackState(Key.UPDATE_CLIENT_STATUS);
+    }
+
+    /**
+     * 刷新摄像头状态
+     *
+     * @param camera
+     */
+    private void refreshCamera(String camera) {
+        videoState = camera;
+        userState.setVideoStatus(videoState);
+        if (videoState.equals(Key.VIDEO_OPEN)) {
+            cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
+            anychat.UserCameraControl(-1, 1);
+            isOpenCamera = true;
+        } else {
+            cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
+            anychat.UserCameraControl(-1, 0);
+            isOpenCamera = false;
         }
         //更新状态
         feedbackState(Key.UPDATE_CLIENT_STATUS);
@@ -388,12 +413,21 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * @return
      */
     private void exitRoom(int dwUserId) {
-        for (UsersBean bean : surfaceBeanList) {
-            if (Integer.parseInt(bean.getUserId()) == dwUserId) {
-                bean.setUserId("0");
-                int index = surfaceBeanList.indexOf(bean);
-                adapter.notifyItemChanged(index);
-                break;
+        if (surfaceBeanList.size() == 1) {
+            //主讲人退出
+            T.showShort("主讲人已经退出，正在获取房间其他人员信息！");
+            refreshCamera(Key.VIDEO_OPEN);//回复本地摄像头状态
+            refreshMic(Key.AUDIO_OPEN);//回复本地语音状态
+            mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+        } else {
+            for (UsersBean bean : surfaceBeanList) {
+                if (Integer.parseInt(bean.getUserId()) == dwUserId) {
+                    bean.setUserId("0");
+                    bean.setIsPrimarySpeaker(Key.NO_SPEAKER);
+                    int index = surfaceBeanList.indexOf(bean);
+                    adapter.notifyItemChanged(index);
+                    break;
+                }
             }
         }
     }
@@ -423,16 +457,20 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         if (videoState.equals(Key.VIDEO_OPEN)) {
             cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
             anychat.UserCameraControl(-1, 1);
+            isOpenCamera = true;
         } else {
             cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
             anychat.UserCameraControl(-1, 0);
+            isOpenCamera = false;
         }
         if (micState.equals(Key.AUDIO_OPEN)) {
             microphone.setImageResource(R.drawable.img_meeting_microphone);
             anychat.UserSpeakControl(-1, 1);
+            isSpeaking = true;
         } else {
             microphone.setImageResource(R.drawable.meeting_microphone_disable);
             anychat.UserSpeakControl(-1, 0);
+            isSpeaking = false;
         }
         //更新状态
         feedbackState(Key.UPDATE_CLIENT_STATUS);
@@ -446,12 +484,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     private UsersBean getSpeaker(List<UsersBean> list) {
         for (UsersBean bean : list) {
-            if (bean.getIsPrimarySpeaker().equals(Key.SPEAKER)) {
-                if (Integer.parseInt(bean.getUserId()) != selfUserId) {
-                    refreshMic(Key.AUDIO_CLOSE);
-                } else {
-                    refreshMic(Key.AUDIO_OPEN);
-                }
+            if (Key.SPEAKER.equals(bean.getIsPrimarySpeaker())) {
                 return bean;
             }
         }
@@ -473,9 +506,17 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 //获取在线人员列表
                 L.d(TAG, "在线人员列表：" + obj.toString());
                 surfaceBeanList.clear();
-                if (getSpeaker((List<UsersBean>) obj) != null) {
+                UsersBean speaker = getSpeaker((List<UsersBean>) obj);
+                if (speaker != null) {
                     //已有主讲人
-                    surfaceBeanList.add(getSpeaker((List<UsersBean>) obj));
+                    surfaceBeanList.add(speaker);
+                    if (Integer.parseInt(speaker.getUserId()) != selfUserId) {
+                        refreshMic(Key.AUDIO_CLOSE);//关闭语音
+                        refreshCamera(Key.VIDEO_CLOSE);//关闭摄像头
+                    } else {
+                        refreshMic(Key.AUDIO_OPEN);//打开语音
+                        refreshCamera(Key.VIDEO_OPEN);//打开摄像头
+                    }
                 } else {
                     //当前实际进入房间数量
                     int currSize = ((List<UsersBean>) obj).size();
@@ -698,9 +739,9 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             int newId = Integer.parseInt(surfaceBeanList.get(newPos).getUserId());
             surfaceBeanList.remove(newPos);
             surfaceBeanList.add(newPos, bean);
-            if (newId != selfUserId){
+            if (newId != selfUserId) {
                 adapter.notifyItemChanged(newPos);
-            }else {
+            } else {
                 initAdapter(showNum);
             }
         } else {
@@ -708,10 +749,10 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             int newId = Integer.parseInt(surfaceBeanList.get(newPos).getUserId());
             int oldId = Integer.parseInt(surfaceBeanList.get(oldPos).getUserId());
             CollectionsUtil.swap1(surfaceBeanList, oldPos, newPos);
-            if (newId != selfUserId && oldId != selfUserId){
+            if (newId != selfUserId && oldId != selfUserId) {
                 adapter.notifyItemChanged(newPos);
                 adapter.notifyItemChanged(oldPos);
-            }else {
+            } else {
                 initAdapter(showNum);
             }
         }
