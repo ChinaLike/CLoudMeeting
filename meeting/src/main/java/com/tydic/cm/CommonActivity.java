@@ -10,17 +10,15 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.bairuitech.anychat.AnyChatCoreSDK;
-import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.adapter.SurfaceAdapter;
 import com.tydic.cm.base.BaseActivity;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
-import com.tydic.cm.model.Audio;
-import com.tydic.cm.model.Video;
 import com.tydic.cm.model.inf.LocalHelper;
+import com.tydic.cm.model.inf.OnAudioStateChangeListener;
 import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnLocationListener;
+import com.tydic.cm.model.inf.OnVideoStateChangeListener;
 import com.tydic.cm.overwrite.LocationPop;
 import com.tydic.cm.overwrite.MeetingMenuPop;
 import com.tydic.cm.overwrite.OnlinePop;
@@ -55,14 +53,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     private ImageView cameraStatus, camera, microphone, sound, menu;//摄像头的状态，摄像头切换，本地麦克风，远程麦克风，菜单
 
-    boolean isSpeaking = true;//是否可以说话
-
-    boolean isSound = true;//是否有声音
-
-    boolean isOpenCamera = true;//是否打开摄像头
-
-    boolean isHasCamera = true; //是否有摄像头，针对个别手机
-
     private MeetingMenuPop meetingMenuPop;
 
     private OnlinePop mOnlinePop;
@@ -81,14 +71,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * 适配数据
      */
     private List<UsersBean> surfaceBeanList = new ArrayList<>();
-    /**
-     * 音频控制
-     */
-    private Audio audio;
-    /**
-     * 视频控制
-     */
-    private Video video;
 
 
     @Override
@@ -98,8 +80,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         mOnlinePop = new OnlinePop(this, mJsParamsBean);
         mOnlinePop.onLineUser();
         mOnlinePop.setOnItemClickListener(this);
-        audio = new Audio(anychat, this);
-        video = new Video(anychat, this);
         //初始化控件
         initView();
         //通用配置
@@ -165,32 +145,34 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 switch (Integer.parseInt(receiveMsg)) {
                     case Key.CLIENT_DISABLE_MIC:
                         T.showShort("您的麦克风被管理员关闭");
-                        isSpeaking = true;
+                        audio.setSpeaking(true);
                         microphone.performClick();
                         break;
                     case Key.CLIENT_ENAble_MIC:
                         T.showShort("您的麦克风被管理员打开");
-                        isSpeaking = false;
+                        audio.setSpeaking(false);
                         microphone.performClick();
                         break;
                     case Key.CLIENT_DISABLE_VIDEO:
-                        if (isHasCamera) {
+                        if (video.isHasCamera()) {
                             //有摄像头
                             T.showShort("您的摄像头被管理员关闭");
-                            isOpenCamera = true;
+                            video.setOpenCamera(true);
                             cameraStatus.performClick();
                         } else {
                             //没有摄像头
+                            video.setOpenCamera(false);
                         }
                         break;
                     case Key.CLIENT_ENAble_VIDEO:
-                        if (isHasCamera) {
+                        if (video.isHasCamera()) {
                             //有摄像头
                             T.showShort("您的摄像头被管理员打开");
-                            isOpenCamera = false;
+                            video.setOpenCamera(false);
                             cameraStatus.performClick();
                         } else {
                             //没有摄像头
+                            video.setOpenCamera(false);
                         }
                         break;
                     default:
@@ -269,17 +251,22 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * 刷新麦克风状态
      */
     private void refreshMic(String mic) {
-        micState = mic;
-        userState.setAudioStatus(micState);
-        if (micState.equals(Key.AUDIO_OPEN)) {
-            microphone.setImageResource(R.drawable.img_meeting_microphone);
-            anychat.UserSpeakControl(-1, 1);
-            isSpeaking = true;
-        } else {
-            microphone.setImageResource(R.drawable.meeting_microphone_disable);
-            anychat.UserSpeakControl(-1, 0);
-            isSpeaking = false;
-        }
+        // micState = mic;
+//        audio.setMicState(mic);
+//        userState.setAudioStatus(mic);
+//        if (mic.equals(Key.AUDIO_OPEN)) {
+//            microphone.setImageResource(R.drawable.img_meeting_microphone);
+//            anychat.UserSpeakControl(-1, 1);
+//            // isSpeaking = true;
+//            audio.setSpeaking(true);
+//        } else {
+//            microphone.setImageResource(R.drawable.meeting_microphone_disable);
+//            anychat.UserSpeakControl(-1, 0);
+//            // isSpeaking = false;
+//            audio.setSpeaking(false);
+//        }
+        userState.setAudioStatus(mic);
+        audio.init(microphone,userState);
         //更新状态
         feedbackState(Key.UPDATE_CLIENT_STATUS);
     }
@@ -290,31 +277,34 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * @param camera
      */
     private void refreshCamera(String camera) {
-        videoState = camera;
-        userState.setVideoStatus(videoState);
-        if (videoState.equals(Key.VIDEO_OPEN)) {
-            cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
-            anychat.UserCameraControl(-1, 1);
-            isOpenCamera = true;
-        } else {
-            cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
-            anychat.UserCameraControl(-1, 0);
-            isOpenCamera = false;
-        }
+        // videoState = camera;
+//        video.setVideoState(camera);
+//        userState.setVideoStatus(camera);
+//        if (camera.equals(Key.VIDEO_OPEN)) {
+//            cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
+//            anychat.UserCameraControl(-1, 1);
+//            video.setOpenCamera(true);
+//        } else {
+//            cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
+//            anychat.UserCameraControl(-1, 0);
+//            video.setOpenCamera(false);
+//        }
+        userState.setVideoStatus(camera);
+        video.init(cameraStatus,userState);
         //更新状态
         feedbackState(Key.UPDATE_CLIENT_STATUS);
     }
 
-    /**
-     * 根据本地状态，判断是否打开远程声音
-     */
-    private void refreshDistanceAudio(UsersBean bean) {
-        if (isSound) {
-            bean.setAudioStatus(Key.AUDIO_OPEN);
-        } else {
-            bean.setAudioStatus(Key.AUDIO_CLOSE);
-        }
-    }
+//    /**
+//     * 根据本地状态，判断是否打开远程声音
+//     */
+//    private void refreshDistanceAudio(UsersBean bean) {
+//        if (audio.isSound()) {
+//            bean.setAudioStatus(Key.AUDIO_OPEN);
+//        } else {
+//            bean.setAudioStatus(Key.AUDIO_CLOSE);
+//        }
+//    }
 
     /**
      * 进入房间成功
@@ -388,7 +378,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 UsersBean bean = surfaceBeanList.get(i);
                 if (bean.getUserId().equals("0")) {
                     bean.setUserId(dwUserId + "");
-                    refreshDistanceAudio(bean);
+                    audio.refreshDistanceAudio(bean);
                     bean.setVideoStatus(Key.VIDEO_OPEN);
                     bean.setIsPrimarySpeaker(Key.NO_SPEAKER);
                     adapter.notifyItemChanged(i);
@@ -442,31 +432,33 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         finish();
     }
 
-    /**
-     * 初始化用户状态
-     */
-    private void initUserState() {
-        if (videoState.equals(Key.VIDEO_OPEN)) {
-            cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
-            anychat.UserCameraControl(-1, 1);
-            isOpenCamera = true;
-        } else {
-            cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
-            anychat.UserCameraControl(-1, 0);
-            isOpenCamera = false;
-        }
-        if (micState.equals(Key.AUDIO_OPEN)) {
-            microphone.setImageResource(R.drawable.img_meeting_microphone);
-            anychat.UserSpeakControl(-1, 1);
-            isSpeaking = true;
-        } else {
-            microphone.setImageResource(R.drawable.meeting_microphone_disable);
-            anychat.UserSpeakControl(-1, 0);
-            isSpeaking = false;
-        }
-        //更新状态
-        feedbackState(Key.UPDATE_CLIENT_STATUS);
-    }
+//    /**
+//     * 初始化用户状态
+//     */
+//    private void initUserState() {
+//        if (video.getVideoState().equals(Key.VIDEO_OPEN)) {
+//            cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
+//            anychat.UserCameraControl(-1, 1);
+//            video.setOpenCamera(true);
+//        } else {
+//            cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
+//            anychat.UserCameraControl(-1, 0);
+//            video.setOpenCamera(false);
+//        }
+//        if (audio.getMicState().equals(Key.AUDIO_OPEN)) {
+//            microphone.setImageResource(R.drawable.img_meeting_microphone);
+//            anychat.UserSpeakControl(-1, 1);
+//            // isSpeaking = true;
+//            audio.setSpeaking(true);
+//        } else {
+//            microphone.setImageResource(R.drawable.meeting_microphone_disable);
+//            anychat.UserSpeakControl(-1, 0);
+//            // isSpeaking = false;
+//            audio.setSpeaking(false);
+//        }
+//        //更新状态
+//        feedbackState(Key.UPDATE_CLIENT_STATUS);
+//    }
 
     @Override
     public void onSuccess(int type, Object obj) {
@@ -475,9 +467,15 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 //获取用户状态
                 userState = (UsersBean) obj;
                 L.d(TAG, "用户状态：" + userState.toString());
-                videoState = userState.getVideoStatus();
-                micState = userState.getAudioStatus();
-                initUserState();
+                video.init(cameraStatus,userState);
+                audio.init(microphone,userState);
+                //更新状态
+                feedbackState(Key.UPDATE_CLIENT_STATUS);
+//                //  videoState = userState.getVideoStatus();
+//                video.setVideoState(userState.getVideoStatus());
+//                //micState = userState.getAudioStatus();
+//                audio.setMicState(userState.getAudioStatus());
+//                initUserState();
                 break;
             case Key.ON_LINE_USER:
                 //获取在线人员列表
@@ -486,7 +484,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 UsersBean speaker = mUserMo.getSpeaker((List<UsersBean>) obj);
                 if (speaker != null) {
                     //已有主讲人
-                    refreshDistanceAudio(speaker);
+                    audio.refreshDistanceAudio(speaker);
                     surfaceBeanList.add(speaker);
                     if (Integer.parseInt(speaker.getUserId()) != selfUserId) {
                         refreshMic(Key.AUDIO_CLOSE);//关闭语音
@@ -508,13 +506,13 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                                 surfaceBeanList.add(usersBean);
                             } else {
                                 //远程
-                                refreshDistanceAudio(usersBean);
+                                audio.refreshDistanceAudio(usersBean);
                                 surfaceBeanList.add(usersBean);
                             }
                         } else {
                             //不足的地方补空位
                             UsersBean emptyBean = new UsersBean();
-                            refreshDistanceAudio(emptyBean);
+                            audio.refreshDistanceAudio(emptyBean);
                             emptyBean.setVideoStatus(Key.VIDEO_CLOSE);
                             emptyBean.setIsPrimarySpeaker(Key.NO_SPEAKER);
                             emptyBean.setDisplayMode(0);
@@ -557,30 +555,30 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     }
 
-    /**
-     * 设置本地状态
-     */
-    private void setLocalImageState() {
-//        //设置语音状态
-//        if (userState.getAudioStatus().equals(Key.AUDIO_OPEN)) {
-//            microphone.setImageResource(R.drawable.img_meeting_microphone);
-//            isSpeaking = true;
+//    /**
+//     * 设置本地状态
+//     */
+//    private void setLocalImageState() {
+////        //设置语音状态
+////        if (userState.getAudioStatus().equals(Key.AUDIO_OPEN)) {
+////            microphone.setImageResource(R.drawable.img_meeting_microphone);
+////            isSpeaking = true;
+////        } else {
+////            microphone.setImageResource(R.drawable.meeting_microphone_disable);
+////            isSpeaking = false;
+////        }
+//        //设置摄像头状态
+//        if (userState.getVideoStatus().equals(Key.VIDEO_OPEN)) {
+//            cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
 //        } else {
-//            microphone.setImageResource(R.drawable.meeting_microphone_disable);
-//            isSpeaking = false;
+//            cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
 //        }
-        //设置摄像头状态
-        if (userState.getVideoStatus().equals(Key.VIDEO_OPEN)) {
-            cameraStatus.setImageResource(R.drawable.img_meeting_camera_open);
-        } else {
-            cameraStatus.setImageResource(R.drawable.img_meeting_camera_close);
-        }
-        if (getLocalBean() != null) {
-            getLocalBean().setVideoStatus(userState.getVideoStatus());
-            getLocalBean().setAudioStatus(userState.getAudioStatus());
-            adapter.notifyItemChanged(surfaceBeanList.indexOf(getLocalBean()));
-        }
-    }
+//        if (getLocalBean() != null) {
+//            getLocalBean().setVideoStatus(userState.getVideoStatus());
+//            getLocalBean().setAudioStatus(userState.getAudioStatus());
+//            adapter.notifyItemChanged(surfaceBeanList.indexOf(getLocalBean()));
+//        }
+//    }
 
     /**
      * 获取本地数据
@@ -602,65 +600,89 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
         if (id == R.id.meeting_transcribe) {
             //摄像头的状态，打开，关闭，无摄像头  0-无摄像头，1-有摄像头关闭，2-有摄像头打开
-            if (isHasCamera) {
-                if (isOpenCamera) {
-                    //执行关闭摄像头
-                    userState.setVideoStatus("1");
-                    videoState = "1";
-                } else {
-                    //执行打开摄像头
-                    userState.setVideoStatus("2");
-                    videoState = "2";
+            video.changeCamera(cameraStatus, userState, new OnVideoStateChangeListener() {
+                @Override
+                public void videoStateChange() {
+                    feedbackState(Key.UPDATE_CLIENT_STATUS);
+                    if (getLocalBean() != null) {
+                        getLocalBean().setVideoStatus(userState.getVideoStatus());
+                        getLocalBean().setAudioStatus(userState.getAudioStatus());
+                        adapter.notifyItemChanged(surfaceBeanList.indexOf(getLocalBean()));
+                    }
                 }
-                feedbackState(Key.UPDATE_CLIENT_STATUS);
-                setLocalImageState();
-                isOpenCamera = !isOpenCamera;
-            } else {
-                //没有摄像头
-                T.showShort("未检测到有摄像头可使用，请在设置中打开摄像头权限！");
-            }
+            });
+//            if (video.isHasCamera()) {
+//                if (video.isOpenCamera()) {
+//                    //执行关闭摄像头
+//                    userState.setVideoStatus("1");
+//                    //  videoState = "1";
+//                    video.setVideoState("1");
+//                } else {
+//                    //执行打开摄像头
+//                    userState.setVideoStatus("2");
+//                    video.setVideoState("2");
+//                }
+//                feedbackState(Key.UPDATE_CLIENT_STATUS);
+//                setLocalImageState();
+//                //   isOpenCamera = !isOpenCamera;
+//                video.setOpenCamera(!video.isOpenCamera());
+//            } else {
+//                //没有摄像头
+//                T.showShort("未检测到有摄像头可使用，请在设置中打开摄像头权限！");
+//            }
         } else if (id == R.id.meeting_camera) {
             //摄像头的前后转换
-            AnyChatCoreSDK.mCameraHelper.SwitchCamera();
-            feedbackState(Key.UPDATE_CLIENT_STATUS);
+            video.switchCamera();
+//            AnyChatCoreSDK.mCameraHelper.SwitchCamera();
+//            feedbackState(Key.UPDATE_CLIENT_STATUS);
         } else if (id == R.id.meeting_microphone) {
             //本地声音
-            if (isSpeaking) {
-                userState.setAudioStatus("0");
-                micState = "0";
-                microphone.setImageResource(R.drawable.meeting_microphone_disable);
-                anychat.UserSpeakControl(-1, 0);
-            } else {
-                microphone.setImageResource(R.drawable.img_meeting_microphone);
-                userState.setAudioStatus("1");
-                micState = "1";
-                anychat.UserSpeakControl(-1, 1);
-            }
-            feedbackState(Key.UPDATE_CLIENT_STATUS);
-            isSpeaking = !isSpeaking;
+            audio.changeLocal(microphone, userState, new OnAudioStateChangeListener() {
+                @Override
+                public void audioStateChange() {
+                    feedbackState(Key.UPDATE_CLIENT_STATUS);
+                }
+            });
+//            if (audio.isSpeaking()) {
+//                userState.setAudioStatus("0");
+//                // micState = "0";
+//                audio.setMicState("0");
+//                microphone.setImageResource(R.drawable.meeting_microphone_disable);
+//                anychat.UserSpeakControl(-1, 0);
+//            } else {
+//                microphone.setImageResource(R.drawable.img_meeting_microphone);
+//                userState.setAudioStatus("1");
+//                // micState = "1";
+//                audio.setMicState("1");
+//                anychat.UserSpeakControl(-1, 1);
+//            }
+//            feedbackState(Key.UPDATE_CLIENT_STATUS);
+//            // isSpeaking = !isSpeaking;
+//            audio.setSpeaking(!audio.isSpeaking());
         } else if (id == R.id.meeting_sound) {
             //远程声音
-//            int[] onlineUserCount = AnyChatCoreSDK.getInstance(this).GetOnlineUser();
-//            int size = onlineUserCount.length;
-            if (isSound) {
-                sound.setImageResource(R.drawable.meeting_speaker_disable);
-//                for (int i = 0; i < size; i++) {
-//                    anychat.UserSpeakControl(onlineUserCount[i], 0);
-//                }
-                audio.closeDistanceAudio();
-            } else {
-                sound.setImageResource(R.drawable.img_meeting_sound);
-//                for (int i = 0; i < size; i++) {
-//                    anychat.UserSpeakControl(onlineUserCount[i], 1);
-//                }
-                audio.openDistanceAudio();
-            }
-            isSound = !isSound;
+            audio.changeDistance(sound);
+////            int[] onlineUserCount = AnyChatCoreSDK.getInstance(this).GetOnlineUser();
+////            int size = onlineUserCount.length;
+//            if (audio.isSound()) {
+//                sound.setImageResource(R.drawable.meeting_speaker_disable);
+////                for (int i = 0; i < size; i++) {
+////                    anychat.UserSpeakControl(onlineUserCount[i], 0);
+////                }
+//                audio.closeDistanceAudio();
+//            } else {
+//                sound.setImageResource(R.drawable.img_meeting_sound);
+////                for (int i = 0; i < size; i++) {
+////                    anychat.UserSpeakControl(onlineUserCount[i], 1);
+////                }
+//                audio.openDistanceAudio();
+//            }
+//            // isSound = !isSound;
+//            audio.setSound(!audio.isSound());
         }
         if (id == R.id.meeting_menu) {
             //菜单键
-            meetingMenuPop.showOnAnchor(rootView, RelativePopupWindow.VerticalPosition.CENTER,
-                    RelativePopupWindow.HorizontalPosition.CENTER, false);
+            meetingMenuPop.show(rootView);
         }
     }
 
@@ -670,9 +692,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         switch (index) {
             case 0:
                 //打开侧边弹窗
-                mOnlinePop.onLineUser();
-                mOnlinePop.showOnAnchor(rootView, RelativePopupWindow.VerticalPosition.ALIGN_TOP,
-                        RelativePopupWindow.HorizontalPosition.RIGHT, true);
+                mOnlinePop.show(rootView);
                 break;
             case 3:
                 finish();
@@ -701,8 +721,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         }
         mLocationPop.setOldPos(oldPos);
         mLocationPop.setBean(bean);
-        mLocationPop.showOnAnchor(rootView, RelativePopupWindow.VerticalPosition.CENTER,
-                RelativePopupWindow.HorizontalPosition.CENTER, false);
+        mLocationPop.show(rootView);
     }
 
     /**
@@ -734,7 +753,14 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             //交换位置
             int newId = Integer.parseInt(surfaceBeanList.get(newPos).getUserId());
             int oldId = Integer.parseInt(surfaceBeanList.get(oldPos).getUserId());
-            CollectionsUtil.swap1(surfaceBeanList, oldPos, newPos);
+            CollectionsUtil.swap3(surfaceBeanList, oldPos, newPos);
+            //在此处先设置声音(必须)
+            if (newId != selfUserId) {
+                audio.refreshDistanceAudio(surfaceBeanList.get(oldPos));
+            }
+            if (oldId != selfUserId) {
+                audio.refreshDistanceAudio(surfaceBeanList.get(newPos));
+            }
             if (newId != selfUserId && oldId != selfUserId) {
                 adapter.notifyItemChanged(newPos);
                 adapter.notifyItemChanged(oldPos);

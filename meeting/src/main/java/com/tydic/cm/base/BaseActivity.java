@@ -21,8 +21,10 @@ import com.tydic.cm.bean.JsParamsBean;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
 import com.tydic.cm.model.AnyChatInit;
+import com.tydic.cm.model.Audio;
 import com.tydic.cm.model.RetrofitMo;
 import com.tydic.cm.model.UserMo;
+import com.tydic.cm.model.Video;
 import com.tydic.cm.model.inf.OnRequestListener;
 import com.tydic.cm.util.CacheUtil;
 import com.tydic.cm.util.T;
@@ -73,19 +75,21 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
     protected int selfUserId;
 
     protected String anyChatUserId;
-    /**
-     * 麦克风状态
-     */
-    protected String micState = "1";
-    /**
-     * 摄像头状态
-     */
-    protected String videoState = "2";
+
     protected int displayMode = 1;
     /**
      * 最大一页视频显示数目
      */
     public final static int MAX_VIDEO_SHOW_NUMBER = 4;
+
+    /**
+     * 音频控制
+     */
+    protected Audio audio;
+    /**
+     * 视频控制
+     */
+    protected Video video;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -171,6 +175,8 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
         anychat.mSensorHelper.InitSensor(mContext);
         AnyChatCoreSDK.mCameraHelper.SetContext(mContext);
+        audio = new Audio(anychat, this);
+        video = new Video(anychat, this);
         feedbackState(Key.UPDATE_CLIENT_STATUS);
         anychat.SetBaseEvent(this);//基本登陆事件接口
         anychat.SetObjectEvent(this);//排队事件接口；
@@ -189,8 +195,9 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         params.put("nickName", mJsParamsBean.getFeedUserName());
         params.put("meetingId", mJsParamsBean.getMeetingId());
         params.put("yhyUserId", mJsParamsBean.getFeedId());
-        params.put("audioStatus", micState);
-        params.put("videoStatus", videoState);
+      //  params.put("audioStatus", micState);
+        params.put("audioStatus", audio.getMicState());
+        params.put("videoStatus", video.getVideoState());
         params.put("displayMode", displayMode + "");
         String info = new Gson().toJson(params);
         if (anyChatUserId.contains(" ")) {

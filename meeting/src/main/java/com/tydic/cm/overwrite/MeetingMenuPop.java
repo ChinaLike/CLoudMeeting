@@ -173,4 +173,15 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
             menuClickListener.onClick(3);
         }
     }
+
+    /**
+     * 显示弹窗
+     *
+     * @param rootView
+     */
+    public void show(View rootView) {
+        showOnAnchor(rootView, RelativePopupWindow.VerticalPosition.CENTER,
+                RelativePopupWindow.HorizontalPosition.CENTER, false);
+    }
+
 }

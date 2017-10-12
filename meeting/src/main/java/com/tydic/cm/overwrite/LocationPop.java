@@ -157,4 +157,13 @@ public class LocationPop extends RelativePopupWindow implements OnItemClickListe
             onLocationListener.loacation(oldPos, position, this.bean);
         }
     }
+
+    /**
+     * 显示弹窗
+     * @param rootView
+     */
+    public void show(View rootView){
+        showOnAnchor(rootView, RelativePopupWindow.VerticalPosition.CENTER,
+                RelativePopupWindow.HorizontalPosition.CENTER, false);
+    }
 }

@@ -140,4 +140,15 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
         T.showShort("获取在线人员列表数据异常");
         dismiss();
     }
+
+    /**
+     * 显示弹窗
+     *
+     * @param rootView
+     */
+    public void show(View rootView) {
+        onLineUser();
+        showOnAnchor(rootView, RelativePopupWindow.VerticalPosition.ALIGN_TOP,
+                RelativePopupWindow.HorizontalPosition.RIGHT, true);
+    }
 }

@@ -68,4 +68,24 @@ public class CollectionsUtil {
             }
         }
     }
+
+    /**
+     * 只交换指定位置数据
+     *
+     * @param list
+     * @param oldPosition
+     * @param newPosition
+     * @param <T>
+     */
+    public static <T> void swap3(List<T> list, int oldPosition, int newPosition) {
+        if (null == list) {
+            throw new IllegalStateException("The list can not be empty...");
+        }
+        try {
+            Collections.swap(list, oldPosition, newPosition);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 }
