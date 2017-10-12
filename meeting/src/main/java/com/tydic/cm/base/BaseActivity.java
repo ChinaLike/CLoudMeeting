@@ -195,7 +195,6 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         params.put("nickName", mJsParamsBean.getFeedUserName());
         params.put("meetingId", mJsParamsBean.getMeetingId());
         params.put("yhyUserId", mJsParamsBean.getFeedId());
-      //  params.put("audioStatus", micState);
         params.put("audioStatus", audio.getMicState());
         params.put("videoStatus", video.getVideoState());
         params.put("displayMode", displayMode + "");
@@ -302,4 +301,20 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         super.onDestroy();
         mAnyChatInit.onDestroy();
     }
+
+    /**
+     * 制造一个不显示视频的Bean
+     * @return
+     */
+    protected UsersBean emptyBean(){
+        UsersBean emptyBean = new UsersBean();
+        audio.refreshDistanceAudio(emptyBean);
+        emptyBean.setVideoStatus(Key.VIDEO_CLOSE);
+        emptyBean.setIsPrimarySpeaker(Key.NO_SPEAKER);
+        emptyBean.setDisplayMode(0);
+        emptyBean.setMeetingId(mJsParamsBean.getMeetingId());
+        emptyBean.setUserId("0");
+        return emptyBean;
+    }
+
 }
