@@ -26,7 +26,9 @@ import com.tydic.cm.model.RetrofitMo;
 import com.tydic.cm.model.UserMo;
 import com.tydic.cm.model.Video;
 import com.tydic.cm.model.inf.OnRequestListener;
+import com.tydic.cm.overwrite.MeetingMenuPop;
 import com.tydic.cm.util.CacheUtil;
+import com.tydic.cm.util.ConvertUtil;
 import com.tydic.cm.util.T;
 
 import java.util.HashMap;
@@ -91,6 +93,8 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
      */
     protected Video video;
 
+    protected MeetingMenuPop meetingMenuPop;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +111,7 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
      */
     private void init() {
         T.init(getApplicationContext());
+        ConvertUtil.init(getApplicationContext());
         mRetrofitMo = new RetrofitMo(mContext);
         mUserMo = new UserMo();
         //初始化sdk
@@ -137,6 +142,9 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         T.showShort("加载成功");
         anyChatUserId = CacheUtil.get(mContext).getAsString(Key.ANYCHAT_USER_ID);
         selfUserId = userId;
+        if (meetingMenuPop!=null){
+            meetingMenuPop.setUserId(userId+"");
+        }
         initSDK();
         initAV();
     }

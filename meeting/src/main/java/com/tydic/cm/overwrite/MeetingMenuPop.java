@@ -11,11 +11,13 @@ import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewAnimationUtils;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.R;
 import com.tydic.cm.model.JsAndroidModule;
+import com.tydic.cm.util.ConvertUtil;
 import com.tydic.cm.util.ScreenUtil;
 
 /**
@@ -54,17 +56,17 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
         View view = LayoutInflater.from(context).inflate(R.layout.pop_metting_menu, null);
         setContentView(view);
 
-        view.findViewById(R.id.tvSpeak).setOnClickListener(this);
-        view.findViewById(R.id.tvInvite).setOnClickListener(this);
-        view.findViewById(R.id.tvShare).setOnClickListener(this);
-        view.findViewById(R.id.tvExit).setOnClickListener(this);
-        view.findViewById(R.id.tvPwd).setOnClickListener(this);
-        view.findViewById(R.id.tvMaterial).setOnClickListener(this);
+        view.findViewById(R.id.llSpeak).setOnClickListener(this);
+        view.findViewById(R.id.llInvite).setOnClickListener(this);
+        view.findViewById(R.id.llShare).setOnClickListener(this);
+        view.findViewById(R.id.llExit).setOnClickListener(this);
+        view.findViewById(R.id.llPwd).setOnClickListener(this);
+        view.findViewById(R.id.llMaterial).setOnClickListener(this);
 
 //        setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
 //        setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-        setWidth(ScreenUtil.getScreenWidth(mContext) / 2);
-        setHeight(ScreenUtil.getScreenHeight(mContext) / 2);
+        setWidth(ConvertUtil.dp2px(260));
+        setHeight(ConvertUtil.dp2px(190));
         setFocusable(true);
         setOutsideTouchable(true);
         setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -129,47 +131,39 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
             return;
         }
 
-        if (id == R.id.tvSpeak) {
+        if (id == R.id.llSpeak) {
             menuClickListener.onClick(0);
-        } else if (id == R.id.tvInvite) {
+        } else if (id == R.id.llInvite) {
             if (isBroadcast(isBroadcastMode)) {
                 return;
             }
             menuClickListener.onClick(1);
             if (userId.equals(createdBy)) {
-//                    Intent intent = new Intent();
-//                    intent.setAction("com.broadcast.meeting.broadcast");
-//                    intent.putExtra("data", "1");
-//                    mContext.sendBroadcast(intent, null);
                 JsAndroidModule.sendEvent("InviteMeeting");
                 ((Activity) mContext).finish();
             } else {
                 Toast.makeText(mContext, "你不是会议管理员，无法操作！", Toast.LENGTH_SHORT).show();
             }
-        } else if (id == R.id.tvShare) {
+        } else if (id == R.id.llShare) {
             if (isBroadcast(isBroadcastMode)) {
                 return;
             }
             menuClickListener.onClick(2);
-//                Intent intent = new Intent();
-//                intent.setAction("com.broadcast.meeting.broadcast");
-//                intent.putExtra("data", "2");
-//                mContext.sendBroadcast(intent, null);
             JsAndroidModule.sendEvent("MaterialMeeting");
             ((Activity) mContext).finish();
-        } else if (id == R.id.tvPwd) {
+        } else if (id == R.id.llPwd) {
             if (isBroadcast(isBroadcastMode)) {
                 return;
             }
             menuClickListener.onClick(4);
-        } else if (id == R.id.tvMaterial) {
+        } else if (id == R.id.llMaterial) {
             if (isBroadcast(isBroadcastMode)) {
                 return;
             }
             menuClickListener.onClick(5);
         }
 
-        if (id == R.id.tvExit) {
+        if (id == R.id.llExit) {
             menuClickListener.onClick(3);
         }
     }

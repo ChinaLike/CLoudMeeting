@@ -50,8 +50,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     private ImageView cameraStatus, camera, microphone, sound, menu;//摄像头的状态，摄像头切换，本地麦克风，远程麦克风，菜单
 
-    private MeetingMenuPop meetingMenuPop;
-
     private OnlinePop mOnlinePop;
 
     private LocationPop mLocationPop;
@@ -84,6 +82,16 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         initAdapter(showNum);
         //初始化本地视频
         initLocalSurface(selfSurface);
+
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (mAnyChatInit!=null){
+            mAnyChatInit.onRestart();
+        }
+
     }
 
     /**
@@ -349,7 +357,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     private void exitRoom(int dwUserId) {
         if (surfaceBeanList.size() == 1) {
             //主讲人退出
-            T.showShort("主讲人已经退出，正在获取房间其他人员信息！");
+          //  T.showShort("主讲人已经退出，正在获取房间其他人员信息！");
             refreshCamera(Key.VIDEO_OPEN);//回复本地摄像头状态
             refreshMic(Key.AUDIO_OPEN);//回复本地语音状态
             mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);

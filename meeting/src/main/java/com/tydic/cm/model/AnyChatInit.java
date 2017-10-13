@@ -180,6 +180,7 @@ import com.tydic.cm.config.ConfigService;
 import com.tydic.cm.constant.Key;
 import com.tydic.cm.overwrite.ECProgressDialog;
 import com.tydic.cm.util.CacheUtil;
+import com.tydic.cm.util.ScreenUtil;
 
 
 /**
@@ -228,12 +229,12 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
         anyChatCoreSDK.InitSDK(android.os.Build.VERSION.SDK_INT, 0);//初始化sdk
 
         AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, LOCALVIDEOAUTOROTATION);
-        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION,1);
+        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, 1);
         anyChatCoreSDK.Connect(Config.mStrIP, Config.mSPort);
     }
 
     public void onDestroy() {
-        if (progressDialog != null && progressDialog.isShowing()){
+        if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
         anyChatCoreSDK.LeaveRoom(-1);
@@ -241,7 +242,7 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
         anyChatCoreSDK.Release();
     }
 
-    public void onClose(){
+    public void onClose() {
         anyChatCoreSDK.LeaveRoom(-1);
         anyChatCoreSDK.Logout();
     }
@@ -306,21 +307,21 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
 
     /**
      * 根据配置文件配置视频参数
-
      */
-    private void ApplyVideoConfig(){
-        ApplyVideoConfig(960,540);
+    private void ApplyVideoConfig() {
+        ApplyVideoConfig(ScreenUtil.getScreenWidth(mContext)/2, ScreenUtil.getScreenHeight(mContext)/2);
     }
 
     /**
      * 根据配置文件配置视频参数
-     * @param width 视频采集的宽
-     * @param height    视频采集的高
+     *
+     * @param width  视频采集的宽
+     * @param height 视频采集的高
      */
-    private void ApplyVideoConfig(int width,int height) {
+    private void ApplyVideoConfig(int width, int height) {
         ConfigEntity configEntity = ConfigService.LoadConfig(mContext);
         // 自定义视频参数配置
-       if (configEntity.configMode == 1) {
+        if (configEntity.configMode == 1) {
             // 设置本地视频编码的码率（如果码率为0，则表示使用质量优先模式）
             AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_BITRATECTRL, configEntity.videoBitrate);
             if (configEntity.videoBitrate == 0) {
