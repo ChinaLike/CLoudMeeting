@@ -69,7 +69,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     @Override
     protected void init(@Nullable Bundle savedInstanceState) {
-        meetingMenuPop = new MeetingMenuPop(mContext, mJsParamsBean.getMeetingId(), mJsParamsBean.getCreated_by(), Integer.parseInt(mJsParamsBean.getIsBroadcastMode()));
+        meetingMenuPop = new MeetingMenuPop(mContext, mJsParamsBean.getMeetingId(), mJsParamsBean.getCreated_by(), mJsParamsBean.getInitiator(),Integer.parseInt(mJsParamsBean.getIsBroadcastMode()));
         meetingMenuPop.setMenuClickListener(this);
         mOnlinePop = new OnlinePop(this, mJsParamsBean);
         mOnlinePop.onLineUser();
@@ -88,9 +88,10 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     @Override
     protected void onRestart() {
         super.onRestart();
-        if (mAnyChatInit!=null){
-            mAnyChatInit.onRestart();
+        if (mRetrofitMo != null) {
+            mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
         }
+
 
     }
 
@@ -357,7 +358,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     private void exitRoom(int dwUserId) {
         if (surfaceBeanList.size() == 1) {
             //主讲人退出
-          //  T.showShort("主讲人已经退出，正在获取房间其他人员信息！");
+            //  T.showShort("主讲人已经退出，正在获取房间其他人员信息！");
             refreshCamera(Key.VIDEO_OPEN);//回复本地摄像头状态
             refreshMic(Key.AUDIO_OPEN);//回复本地语音状态
             mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);

@@ -30,6 +30,7 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
     private String meetingId;
     private Context mContext;
     private String createdBy;
+    private String initiator;
     private int isBroadcastMode;
 
     private String userId;
@@ -48,10 +49,11 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
         this.menuClickListener = menuClickListener;
     }
 
-    public MeetingMenuPop(Context context, String meetingId, String createdBy, int isBroadcastMode) {
+    public MeetingMenuPop(Context context, String meetingId, String createdBy, String initiator,int isBroadcastMode) {
         this.mContext = context;
         this.meetingId = meetingId;
         this.createdBy = createdBy;
+        this.initiator = initiator;
         this.isBroadcastMode = isBroadcastMode;
         View view = LayoutInflater.from(context).inflate(R.layout.pop_metting_menu, null);
         setContentView(view);
@@ -138,7 +140,7 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
                 return;
             }
             menuClickListener.onClick(1);
-            if (userId.equals(createdBy)) {
+            if (userId.equals(createdBy) || userId.equals(initiator)) {
                 JsAndroidModule.sendEvent("InviteMeeting");
                 ((Activity) mContext).finish();
             } else {

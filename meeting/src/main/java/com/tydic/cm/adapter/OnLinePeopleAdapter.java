@@ -165,6 +165,12 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
             holder.tvSpeaker.setVisibility(View.VISIBLE);
         }
 
+        if (mList.size() <= 1){
+            holder.tvLocation.setVisibility(View.GONE);
+        }else {
+            holder.tvLocation.setVisibility(View.VISIBLE);
+        }
+
     }
 
     @Override

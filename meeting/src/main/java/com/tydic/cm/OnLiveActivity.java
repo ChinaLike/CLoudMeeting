@@ -43,7 +43,7 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
     @Override
     protected void init(@Nullable Bundle savedInstanceState) {
         mRetrofitMo.userState(mJsParamsBean.getRoomId(),mJsParamsBean.getFeedId(),this);
-        meetingMenuPop = new MeetingMenuPop(this,mJsParamsBean.getMeetingId(),mJsParamsBean.getCreated_by(),Integer.parseInt(mJsParamsBean.getIsBroadcastMode()));
+        meetingMenuPop = new MeetingMenuPop(this,mJsParamsBean.getMeetingId(),mJsParamsBean.getCreated_by(), mJsParamsBean.getInitiator(),Integer.parseInt(mJsParamsBean.getIsBroadcastMode()));
         meetingMenuPop.setMenuClickListener(this);
         mOnlinePop = new OnlinePop(this,mJsParamsBean);
         mOnlinePop.onLineUser();

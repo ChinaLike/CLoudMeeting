@@ -1,8 +1,11 @@
 package com.tydic.cm.base;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.SurfaceHolder;
@@ -29,6 +32,7 @@ import com.tydic.cm.model.inf.OnRequestListener;
 import com.tydic.cm.overwrite.MeetingMenuPop;
 import com.tydic.cm.util.CacheUtil;
 import com.tydic.cm.util.ConvertUtil;
+import com.tydic.cm.util.PermissionUtils;
 import com.tydic.cm.util.T;
 
 import java.util.HashMap;
@@ -40,8 +44,7 @@ import java.util.Map;
  */
 
 public abstract class BaseActivity extends AppCompatActivity implements AnyChatInit.LoginCallBack,
-        OnRequestListener, AnyChatBaseEvent, AnyChatObjectEvent, AnyChatVideoCallEvent, AnyChatTransDataEvent
-{
+        OnRequestListener, AnyChatBaseEvent, AnyChatObjectEvent, AnyChatVideoCallEvent, AnyChatTransDataEvent {
 
     protected static final String TAG = "视频会议";
 
@@ -95,6 +98,9 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
     protected MeetingMenuPop meetingMenuPop;
 
+    //权限组
+    private String[] permissions = new String[]{Manifest.permission.CAMERA,Manifest.permission.RECORD_AUDIO};
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,6 +110,13 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         mContext = this;
         init();
         init(savedInstanceState);
+
+        if (android.os.Build.VERSION.SDK_INT > 22) {
+            //先判断系统并请求权限
+            if (!PermissionUtils.checkPermissionAllGranted(permissions, this)) {
+                PermissionUtils.requestPermission(permissions, this);
+            }
+        }
     }
 
     /**
@@ -142,8 +155,8 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         T.showShort("加载成功");
         anyChatUserId = CacheUtil.get(mContext).getAsString(Key.ANYCHAT_USER_ID);
         selfUserId = userId;
-        if (meetingMenuPop!=null){
-            meetingMenuPop.setUserId(userId+"");
+        if (meetingMenuPop != null) {
+            meetingMenuPop.setUserId(userId + "");
         }
         initSDK();
         initAV();
@@ -238,6 +251,7 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
     /**
      * 初始化本地
+     *
      * @param selfSurface
      */
     protected void initLocalSurface(SurfaceView selfSurface) {
@@ -312,9 +326,10 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
     /**
      * 制造一个不显示视频的Bean
+     *
      * @return
      */
-    protected UsersBean emptyBean(){
+    protected UsersBean emptyBean() {
         UsersBean emptyBean = new UsersBean();
         audio.refreshDistanceAudio(emptyBean);
         emptyBean.setVideoStatus(Key.VIDEO_CLOSE);
@@ -325,4 +340,26 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         return emptyBean;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PermissionUtils.MY_PERMISSION_REQUEST_CODE) {
+            boolean isAllGranted = true;
+            // 判断是否所有的权限都已经授予了
+            for (int grant : grantResults) {
+                if (grant != PackageManager.PERMISSION_GRANTED) {
+                    isAllGranted = false;
+                    break;
+                }
+            }
+
+            if (isAllGranted && anychat != null) {
+                // 如果所有的权限都授予了, 则执行备份代码
+                anychat.UserCameraControl(-1, 1);
+            } else {
+                // 弹出对话框告诉用户需要权限的原因, 并引导用户去应用权限管理中手动打开权限按钮
+                //
+            }
+        }
+    }
 }
