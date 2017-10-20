@@ -69,7 +69,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     @Override
     protected void init(@Nullable Bundle savedInstanceState) {
-        meetingMenuPop = new MeetingMenuPop(mContext, mJsParamsBean.getMeetingId(), mJsParamsBean.getCreated_by(), mJsParamsBean.getInitiator(),Integer.parseInt(mJsParamsBean.getIsBroadcastMode()));
         meetingMenuPop.setMenuClickListener(this);
         mOnlinePop = new OnlinePop(this, mJsParamsBean);
         mOnlinePop.onLineUser();
@@ -234,6 +233,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         surfaceBeanList.clear();
                         surfaceBeanList.add(bean);
                         initAdapter(1);
+                        mOnlinePop.onLineUser();
                     }
                     break;
                 default:

@@ -11,14 +11,13 @@ import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewAnimationUtils;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.R;
+import com.tydic.cm.bean.JsParamsBean;
 import com.tydic.cm.model.JsAndroidModule;
 import com.tydic.cm.util.ConvertUtil;
-import com.tydic.cm.util.ScreenUtil;
 
 /**
  * 功能菜单键
@@ -27,20 +26,12 @@ import com.tydic.cm.util.ScreenUtil;
 
 public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickListener {
 
-    private String meetingId;
     private Context mContext;
-    private String createdBy;
-    private String initiator;
-    private int isBroadcastMode;
+    private JsParamsBean bean;
 
-    private String userId;
 
     public interface MenuClickListener {
         void onClick(int index);
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 
     private MenuClickListener menuClickListener;
@@ -49,12 +40,9 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
         this.menuClickListener = menuClickListener;
     }
 
-    public MeetingMenuPop(Context context, String meetingId, String createdBy, String initiator,int isBroadcastMode) {
+    public MeetingMenuPop(Context context, JsParamsBean bean) {
         this.mContext = context;
-        this.meetingId = meetingId;
-        this.createdBy = createdBy;
-        this.initiator = initiator;
-        this.isBroadcastMode = isBroadcastMode;
+        this.bean = bean;
         View view = LayoutInflater.from(context).inflate(R.layout.pop_metting_menu, null);
         setContentView(view);
 
@@ -136,30 +124,30 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
         if (id == R.id.llSpeak) {
             menuClickListener.onClick(0);
         } else if (id == R.id.llInvite) {
-            if (isBroadcast(isBroadcastMode)) {
+            if (isBroadcast(Integer.parseInt(bean.getIsBroadcastMode()))) {
                 return;
             }
             menuClickListener.onClick(1);
-            if (userId.equals(createdBy) || userId.equals(initiator)) {
+            if (bean.getFeedId().equals(bean.getCreated_by()) || bean.getFeedId().equals(bean.getInitiator())) {
                 JsAndroidModule.sendEvent("InviteMeeting");
                 ((Activity) mContext).finish();
             } else {
                 Toast.makeText(mContext, "你不是会议管理员，无法操作！", Toast.LENGTH_SHORT).show();
             }
         } else if (id == R.id.llShare) {
-            if (isBroadcast(isBroadcastMode)) {
+            if (isBroadcast(Integer.parseInt(bean.getIsBroadcastMode()))) {
                 return;
             }
             menuClickListener.onClick(2);
             JsAndroidModule.sendEvent("MaterialMeeting");
             ((Activity) mContext).finish();
         } else if (id == R.id.llPwd) {
-            if (isBroadcast(isBroadcastMode)) {
+            if (isBroadcast(Integer.parseInt(bean.getIsBroadcastMode()))) {
                 return;
             }
             menuClickListener.onClick(4);
         } else if (id == R.id.llMaterial) {
-            if (isBroadcast(isBroadcastMode)) {
+            if (isBroadcast(Integer.parseInt(bean.getIsBroadcastMode()))) {
                 return;
             }
             menuClickListener.onClick(5);

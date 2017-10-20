@@ -126,6 +126,7 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         T.init(getApplicationContext());
         ConvertUtil.init(getApplicationContext());
         mRetrofitMo = new RetrofitMo(mContext);
+        meetingMenuPop = new MeetingMenuPop(mContext, mJsParamsBean);
         mUserMo = new UserMo();
         //初始化sdk
         if (anychat == null) {
@@ -155,9 +156,6 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         T.showShort("加载成功");
         anyChatUserId = CacheUtil.get(mContext).getAsString(Key.ANYCHAT_USER_ID);
         selfUserId = userId;
-        if (meetingMenuPop != null) {
-            meetingMenuPop.setUserId(userId + "");
-        }
         initSDK();
         initAV();
     }

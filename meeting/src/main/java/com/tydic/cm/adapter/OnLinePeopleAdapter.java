@@ -165,12 +165,32 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
             holder.tvSpeaker.setVisibility(View.VISIBLE);
         }
 
-        if (mList.size() <= 1){
+        if (mList.size() <= 1) {
+            holder.tvLocation.setVisibility(View.GONE);
+        } else {
+            holder.tvLocation.setVisibility(View.VISIBLE);
+        }
+
+        if (isHasPrimarySpeaker()){
             holder.tvLocation.setVisibility(View.GONE);
         }else {
             holder.tvLocation.setVisibility(View.VISIBLE);
         }
 
+    }
+
+    /**
+     * 是否有主讲人
+     *
+     * @return
+     */
+    private boolean isHasPrimarySpeaker() {
+        for (UsersBean bean : mList) {
+            if (bean.getIsPrimarySpeaker().equals(Key.SPEAKER)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
