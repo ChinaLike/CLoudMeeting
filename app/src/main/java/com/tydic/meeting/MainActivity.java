@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.tydic.cm.CommonActivity;
+import com.tydic.cm.OnLiveActivity;
 import com.tydic.cm.bean.JsParamsBean;
 import com.tydic.cm.constant.Key;
 import com.tydic.cm.util.CacheUtil;

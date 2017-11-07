@@ -591,9 +591,19 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             }
         } else {
             //交换位置
+            if ((oldPos == 0 && newPos == 1) || (oldPos == 1 && newPos == 0)) {
+                //处理1位置和2位置交换
+                CollectionsUtil.swap3(surfaceBeanList, oldPos, newPos);
+            } else {
+                //处理非1位置切换到其他位置
+                UsersBean oldBean = surfaceBeanList.get(oldPos);
+                surfaceBeanList.remove(oldPos);
+                surfaceBeanList.add(oldPos, emptyBean());
+                surfaceBeanList.remove(newPos);
+                surfaceBeanList.add(newPos, oldBean);
+            }
             int newId = Integer.parseInt(surfaceBeanList.get(newPos).getUserId());
             int oldId = Integer.parseInt(surfaceBeanList.get(oldPos).getUserId());
-            CollectionsUtil.swap3(surfaceBeanList, oldPos, newPos);
             //在此处先设置声音(必须)
             if (newId != selfUserId) {
                 audio.refreshDistanceAudio(surfaceBeanList.get(oldPos));

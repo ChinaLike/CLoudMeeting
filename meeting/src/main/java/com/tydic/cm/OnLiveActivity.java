@@ -127,10 +127,21 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
             mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(),this);
         }
     }
-
+    /**
+     * 当前房间用户离开或者进入房间触发这个回调，dwUserId用户  id," bEnter==true"表示进入房间,反之表示离开房间
+     *
+     * @param dwUserId
+     * @param bEnter
+     */
     @Override
     public void OnAnyChatUserAtRoomMessage(int dwUserId, boolean bEnter) {
-        mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+        try {
+            Thread.sleep(500);
+            mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -141,9 +152,10 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
     /**
      * 判断是否有主讲人
      */
-    private void initSpeaker() {
+    private void initSpeaker(List<UsersBean> list) {
+        L.d("数据测试",list.toString());
         boolean hasSpeaker = false;
-        for (UsersBean usersBean : usersBeanList) {
+        for (UsersBean usersBean : list) {
             if (usersBean.getIsPrimarySpeaker().equals("1")) {
                 //主讲人
                 hasSpeaker = true;
@@ -162,8 +174,9 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
     @Override
     public void onSuccess(int type, Object obj) {
         if (type == Key.ON_LINE_USER) {
-            usersBeanList = (List<UsersBean>) obj;
-            initSpeaker();
+            usersBeanList.clear();
+            usersBeanList.addAll((List<UsersBean>) obj);
+            initSpeaker(usersBeanList);
         } else if (type == Key.USER_STATE) {
                 userState = (UsersBean) obj;
                 mOnlinePop.onLineUser();
@@ -201,8 +214,7 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
     @Override
     public void onClick(View view) {
         //菜单键
-        meetingMenuPop.showOnAnchor(rootView, RelativePopupWindow.VerticalPosition.CENTER,
-                RelativePopupWindow.HorizontalPosition.CENTER, false);
+        meetingMenuPop.show(rootView);
     }
 
     @Override
@@ -212,9 +224,7 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
             case 0:
                 //打开侧边弹窗
                 if (mOnlinePop != null) {
-                    mOnlinePop.onLineUser();
-                    mOnlinePop.showOnAnchor(rootView, RelativePopupWindow.VerticalPosition.ALIGN_TOP,
-                            RelativePopupWindow.HorizontalPosition.RIGHT, true);
+                    mOnlinePop.show(rootView);
                 }
                 break;
             case 3:
