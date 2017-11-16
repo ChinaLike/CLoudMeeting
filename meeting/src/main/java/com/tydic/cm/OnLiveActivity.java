@@ -9,7 +9,6 @@ import android.widget.RelativeLayout;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
-import com.labo.kaji.relativepopupwindow.RelativePopupWindow;
 import com.tydic.cm.base.BaseActivity;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
@@ -178,8 +177,8 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
             usersBeanList.addAll((List<UsersBean>) obj);
             initSpeaker(usersBeanList);
         } else if (type == Key.USER_STATE) {
-                userState = (UsersBean) obj;
-                mOnlinePop.onLineUser();
+            userState = (UsersBean) obj;
+            mOnlinePop.onLineUser();
         }
     }
 
@@ -233,5 +232,30 @@ public class OnLiveActivity extends BaseActivity implements View.OnClickListener
             default:
                 break;
         }
+    }
+
+    @Override
+    public void OnAnyChatMicStateChgMessage(int dwUserId, boolean bOpenMic) {
+
+    }
+
+    @Override
+    public void OnAnyChatCameraStateChgMessage(int dwUserId, int dwState) {
+
+    }
+
+    @Override
+    public void OnAnyChatChatModeChgMessage(int dwUserId, boolean bPublicChat) {
+
+    }
+
+    @Override
+    public void OnAnyChatActiveStateChgMessage(int dwUserId, int dwState) {
+
+    }
+
+    @Override
+    public void OnAnyChatP2PConnectStateMessage(int dwUserId, int dwState) {
+
     }
 }

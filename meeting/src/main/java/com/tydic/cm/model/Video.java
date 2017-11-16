@@ -84,11 +84,13 @@ public class Video {
                 userState.setVideoStatus("1");
                 setVideoState("1");
                 view.setImageResource(R.drawable.img_meeting_camera_close);
+                anychat.UserCameraControl(-1, 0);
             } else {
                 //执行打开摄像头
                 userState.setVideoStatus("2");
                 setVideoState("2");
                 view.setImageResource(R.drawable.img_meeting_camera_open);
+                anychat.UserCameraControl(-1, 1);
             }
             if (listener != null) {
                 listener.videoStateChange();
@@ -97,6 +99,7 @@ public class Video {
         } else {
             //没有摄像头
             T.showShort("未检测到有摄像头可使用，请在设置中打开摄像头权限！");
+            anychat.UserCameraControl(-1, 0);
         }
     }
 

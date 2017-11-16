@@ -1,9 +1,11 @@
 package com.tydic.cm;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -24,6 +26,7 @@ import com.tydic.cm.overwrite.MeetingMenuPop;
 import com.tydic.cm.overwrite.OnlinePop;
 import com.tydic.cm.util.CollectionsUtil;
 import com.tydic.cm.util.L;
+import com.tydic.cm.overwrite.SimpleDividerItemDecoration;
 import com.tydic.cm.util.T;
 
 import java.io.UnsupportedEncodingException;
@@ -99,6 +102,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     private void initView() {
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        recyclerView.addItemDecoration(new SimpleDividerItemDecoration(1,0xFFFFFFFF));
         selfSurface = (SurfaceView) findViewById(R.id.self_surface);
         localParent = (FrameLayout) findViewById(R.id.local_parent);
         rootView = (RelativeLayout) findViewById(R.id.root);
@@ -366,7 +370,9 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             for (UsersBean bean : surfaceBeanList) {
                 if (Integer.parseInt(bean.getUserId()) == dwUserId) {
                     bean.setUserId("0");
+                    bean.setVideoStatus(Key.VIDEO_CLOSE);
                     bean.setIsPrimarySpeaker(Key.NO_SPEAKER);
+                    bean.setNickName("");
                     int index = surfaceBeanList.indexOf(bean);
                     adapter.notifyItemChanged(index);
                     break;
@@ -633,5 +639,32 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     @Override
     public void local(int position, UsersBean bean, int width, int height, int x, int y) {
         localParent.removeView(selfSurface);
+    }
+
+    @Override
+    public void OnAnyChatMicStateChgMessage(int dwUserId, boolean bOpenMic) {
+
+    }
+
+    @Override
+    public void OnAnyChatCameraStateChgMessage(int dwUserId, int dwState) {
+        Log.e("OnAnyChatCameraStateChg", dwUserId + " " + dwState);
+        feedbackState(Key.UPDATE_CLIENT_STATUS);
+        mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+    }
+
+    @Override
+    public void OnAnyChatChatModeChgMessage(int dwUserId, boolean bPublicChat) {
+
+    }
+
+    @Override
+    public void OnAnyChatActiveStateChgMessage(int dwUserId, int dwState) {
+
+    }
+
+    @Override
+    public void OnAnyChatP2PConnectStateMessage(int dwUserId, int dwState) {
+
     }
 }

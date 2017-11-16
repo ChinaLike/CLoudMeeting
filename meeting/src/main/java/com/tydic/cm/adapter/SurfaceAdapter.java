@@ -8,16 +8,17 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.tydic.cm.R;
-import com.tydic.cm.base.BaseActivity;
-import com.tydic.cm.bean.SurfaceBean;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
 import com.tydic.cm.model.inf.LocalHelper;
+import com.tydic.cm.util.L;
 import com.tydic.cm.util.ScreenUtil;
 
 import java.util.List;
@@ -65,8 +66,31 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
     public void onBindViewHolder(SurfaceViewHolder holder, int position) {
         UsersBean bean = mList.get(position);
         holder.parent.setLayoutParams(params);
+        //显示参会人员名字
+        if (mList.get(position).getNickName() != null) {
+            holder.tvName.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvName.setVisibility(View.GONE);
+        }
+        holder.tvName.setText(bean.getNickName());
         int userID = Integer.parseInt(bean.getUserId());
-        //   holder.surfaceLayout.setBackgroundColor(testColor[position]);
+        //显示摄像头关闭的参会人员,未加入会议的空位显示
+        if (bean.getVideoStatus().equals(Key.VIDEO_CLOSE) && bean.getNickName() !=null && !bean.getNickName().equals("")) {
+            holder.surfaceLayout.setVisibility(View.GONE);
+            holder.camera_img.setVisibility(View.VISIBLE);
+            holder.camera_img.setImageResource(R.drawable.shut_camera);
+            holder.parent.setBackgroundColor(0xFF12182d);
+        } else if (bean.getVideoStatus().equals(Key.VIDEO_OPEN) ){
+            holder.surfaceLayout.setVisibility(View.VISIBLE);
+            holder.camera_img.setVisibility(View.GONE);
+            holder.parent.setBackgroundColor(Color.TRANSPARENT);
+        }else {
+            //没有摄像头图片
+            holder.surfaceLayout.setVisibility(View.GONE);
+            holder.camera_img.setVisibility(View.GONE);
+//            holder.parent.setVisibility(View.GONE);
+        }
+
         initLocalSurface(position, bean);
         if (bean.getVideoStatus().equals(Key.VIDEO_OPEN)) {
             if (userID == selfID) {
@@ -76,14 +100,14 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
                 if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
                     holder.surfaceLayout.getHolder().addCallback(AnyChatCoreSDK.mCameraHelper);
                 }
-                if (bean.getVideoStatus().equals(Key.VIDEO_OPEN)){
+                if (bean.getVideoStatus().equals(Key.VIDEO_OPEN)) {
                     anychat.UserCameraControl(-1, 1);
-                }else {
+                } else {
                     anychat.UserCameraControl(-1, 0);
                 }
-                if (bean.getAudioStatus().equals(Key.AUDIO_OPEN)){
+                if (bean.getAudioStatus().equals(Key.AUDIO_OPEN)) {
                     anychat.UserSpeakControl(-1, 1);
-                }else {
+                } else {
                     anychat.UserSpeakControl(-1, 0);
                 }
                 //    holder.surfaceLayout.setZOrderOnTop(false);
@@ -97,7 +121,12 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
     @Override
     public int getItemCount() {
         initWH();
-        params = new RelativeLayout.LayoutParams(width, height);
+        //处理一屛时右侧有白色分割线
+        if (width == ScreenUtil.getScreenWidth(mContext)){
+            params = new RelativeLayout.LayoutParams(width, height);
+        }else {
+            params = new RelativeLayout.LayoutParams(width-1, height);
+        }
         return mList == null ? 0 : mList.size();
     }
 
@@ -107,6 +136,7 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
 
     /**
      * 设置显示列数
+     *
      * @param column
      */
     public void setColumn(int column) {
@@ -127,10 +157,10 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
         if (mLocalHelper != null) {
             int x = 0;//X轴偏移位置
             int y = 0;//Y轴偏移位置
-            if (position >= column){
-                x = (position-column) * width;
+            if (position >= column) {
+                x = (position - column) * width;
                 y = height;
-            }else {
+            } else {
                 x = position * width;
                 y = 0;
             }
@@ -197,10 +227,16 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
 
         SurfaceView surfaceLayout;
 
+        TextView tvName;
+
+        ImageView camera_img;
+
         public SurfaceViewHolder(View itemView) {
             super(itemView);
             parent = itemView.findViewById(R.id.surface_parent);
             surfaceLayout = itemView.findViewById(R.id.surface_view);
+            tvName = itemView.findViewById(R.id.tvName);
+            camera_img = itemView.findViewById(R.id.camera_close);
         }
     }
 

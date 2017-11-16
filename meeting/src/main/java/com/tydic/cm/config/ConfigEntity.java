@@ -44,8 +44,8 @@ public class ConfigEntity {
     public boolean IsSaveNameAndPw;                            //是否保存用户名和密码
 
 
-    public int configMode = VIDEO_MODE_SERVERCONFIG;
-//    public int configMode = 1;
+    public int configMode = VIDEO_MODE_CUSTOMCONFIG;
+    //    public int configMode = 1;
     public int resolution_width = 0;
     public int resolution_height = 0;
 

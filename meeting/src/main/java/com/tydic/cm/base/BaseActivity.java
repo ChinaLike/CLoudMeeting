@@ -17,6 +17,7 @@ import com.bairuitech.anychat.AnyChatBaseEvent;
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
 import com.bairuitech.anychat.AnyChatObjectEvent;
+import com.bairuitech.anychat.AnyChatStateChgEvent;
 import com.bairuitech.anychat.AnyChatTransDataEvent;
 import com.bairuitech.anychat.AnyChatVideoCallEvent;
 import com.google.gson.Gson;
@@ -44,7 +45,7 @@ import java.util.Map;
  */
 
 public abstract class BaseActivity extends AppCompatActivity implements AnyChatInit.LoginCallBack,
-        OnRequestListener, AnyChatBaseEvent, AnyChatObjectEvent, AnyChatVideoCallEvent, AnyChatTransDataEvent {
+        OnRequestListener, AnyChatBaseEvent, AnyChatObjectEvent, AnyChatVideoCallEvent, AnyChatTransDataEvent, AnyChatStateChgEvent {
 
     protected static final String TAG = "视频会议";
 
@@ -99,7 +100,7 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
     protected MeetingMenuPop meetingMenuPop;
 
     //权限组
-    private String[] permissions = new String[]{Manifest.permission.CAMERA,Manifest.permission.RECORD_AUDIO};
+    private String[] permissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -191,9 +192,6 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
     }
 
     private void initSDK() {
-
-        anychat.mSensorHelper.InitSensor(mContext);
-        AnyChatCoreSDK.mCameraHelper.SetContext(mContext);
         audio = new Audio(anychat, this);
         video = new Video(anychat, this);
         feedbackState(Key.UPDATE_CLIENT_STATUS);
@@ -201,6 +199,9 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         anychat.SetObjectEvent(this);//排队事件接口；
         anychat.SetTransDataEvent(this);
         anychat.SetVideoCallEvent(this);
+        anychat.SetStateChgEvent(this);
+        anychat.mSensorHelper.InitSensor(mContext);
+        AnyChatCoreSDK.mCameraHelper.SetContext(mContext);
     }
 
     /**
@@ -319,6 +320,9 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (anychat!= null){
+            anychat.UserCameraControl(-1,0);
+        }
         mAnyChatInit.onDestroy();
     }
 

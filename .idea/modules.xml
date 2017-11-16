@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/CloudMeeting.iml" filepath="$PROJECT_DIR$/CloudMeeting.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CLoudMeeting.iml" filepath="$PROJECT_DIR$/CLoudMeeting.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/meeting/meeting.iml" filepath="$PROJECT_DIR$/meeting/meeting.iml" />
     </modules>
