@@ -1,7 +1,10 @@
 package com.tydic.cm;
 
-import android.graphics.Color;
+
+import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,12 +27,13 @@ import com.tydic.cm.model.inf.OnVideoStateChangeListener;
 import com.tydic.cm.overwrite.LocationPop;
 import com.tydic.cm.overwrite.MeetingMenuPop;
 import com.tydic.cm.overwrite.OnlinePop;
+import com.tydic.cm.overwrite.SimpleDividerItemDecoration;
 import com.tydic.cm.util.CollectionsUtil;
 import com.tydic.cm.util.L;
-import com.tydic.cm.overwrite.SimpleDividerItemDecoration;
 import com.tydic.cm.util.T;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,9 +73,12 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * 适配数据
      */
     private List<UsersBean> surfaceBeanList = new ArrayList<>();
+    private VideoHandler handler;
+
 
     @Override
     protected void init(@Nullable Bundle savedInstanceState) {
+        handler = new VideoHandler(this);
         meetingMenuPop.setMenuClickListener(this);
         mOnlinePop = new OnlinePop(this, mJsParamsBean);
         mOnlinePop.onLineUser();
@@ -84,7 +91,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         initAdapter(showNum);
         //初始化本地视频
         initLocalSurface(selfSurface);
-
     }
 
     @Override
@@ -93,8 +99,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         if (mRetrofitMo != null) {
             mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
         }
-
-
     }
 
     /**
@@ -102,7 +106,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     private void initView() {
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        recyclerView.addItemDecoration(new SimpleDividerItemDecoration(1,0xFFFFFFFF));
+        recyclerView.addItemDecoration(new SimpleDividerItemDecoration(1, 0xFFFFFFFF));
         selfSurface = (SurfaceView) findViewById(R.id.self_surface);
         localParent = (FrameLayout) findViewById(R.id.local_parent);
         rootView = (RelativeLayout) findViewById(R.id.root);
@@ -127,11 +131,12 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         adapter = new SurfaceAdapter(mContext, surfaceBeanList);
         adapter.setSelfID(selfUserId);
         adapter.setAnychat(anychat);
-        adapter.setColumn(showCount);
         adapter.setLocalHelper(this);
+        adapter.setColumn(showCount);
         GridLayoutManager manager = new GridLayoutManager(mContext, showCount);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
+
     }
 
     @Override
@@ -650,7 +655,9 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     public void OnAnyChatCameraStateChgMessage(int dwUserId, int dwState) {
         Log.e("OnAnyChatCameraStateChg", dwUserId + " " + dwState);
         feedbackState(Key.UPDATE_CLIENT_STATUS);
-        mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+        if (handler != null) {
+            handler.sendEmptyMessageDelayed(0, 500);
+        }
     }
 
     @Override
@@ -666,5 +673,23 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     @Override
     public void OnAnyChatP2PConnectStateMessage(int dwUserId, int dwState) {
 
+    }
+
+    private class VideoHandler extends Handler {
+        WeakReference<Activity> mWeakReference;
+
+        public VideoHandler(Activity activity) {
+            mWeakReference = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            final Activity activity = mWeakReference.get();
+            if (activity != null) {
+                if (msg.what == 0) {
+                    mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), CommonActivity.this);
+                }
+            }
+        }
     }
 }
