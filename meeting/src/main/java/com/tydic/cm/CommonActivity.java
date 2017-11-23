@@ -131,8 +131,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         adapter = new SurfaceAdapter(mContext, surfaceBeanList);
         adapter.setSelfID(selfUserId);
         adapter.setAnychat(anychat);
-        adapter.setLocalHelper(this);
         adapter.setColumn(showCount);
+        adapter.setLocalHelper(this);
         GridLayoutManager manager = new GridLayoutManager(mContext, showCount);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);

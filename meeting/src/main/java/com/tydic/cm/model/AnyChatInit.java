@@ -229,7 +229,7 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
         anyChatCoreSDK.InitSDK(android.os.Build.VERSION.SDK_INT, 0);//初始化sdk
 
         AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, LOCALVIDEOAUTOROTATION);
-//        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, 0);
+        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, 1);
         anyChatCoreSDK.Connect(Config.mStrIP, Config.mSPort);
     }
 
@@ -308,7 +308,7 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
     /**
      * 根据配置文件配置视频参数
      */
-    public void ApplyVideoConfig() {
+    private void ApplyVideoConfig() {
         ApplyVideoConfig(ScreenUtil.getScreenWidth(mContext)/2, ScreenUtil.getScreenHeight(mContext)/2);
     }
 
@@ -318,7 +318,7 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
      * @param width  视频采集的宽
      * @param height 视频采集的高
      */
-    public void ApplyVideoConfig(int width, int height) {
+    private void ApplyVideoConfig(int width, int height) {
         ConfigEntity configEntity = ConfigService.LoadConfig(mContext);
         // 自定义视频参数配置
         if (configEntity.configMode == 1) {
@@ -338,7 +338,8 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
             // 设置视频编码预设参数（值越大，编码质量越高，占用CPU资源也会越高）
             AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_PRESETCTRL, configEntity.videoPreset);
         }
-
+        // 让视频参数生效
+        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_APPLYPARAM, configEntity.configMode);
         // P2P设置
         AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_NETWORK_P2PPOLITIC, configEntity.enableP2P);
         // 本地视频Overlay模式设置
@@ -355,9 +356,6 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
         AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_VIDEOSHOW_GPUDIRECTRENDER, configEntity.videoShowGPURender);
         // 本地视频自动旋转设置
         AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, configEntity.videoAutoRotation);
-        // 让视频参数生效
-        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_APPLYPARAM, configEntity.configMode);
-
     }
 
     // 初始化服务对象事件；触发回调OnAnyChatObjectEvent函数

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -35,7 +34,6 @@ import com.tydic.cm.overwrite.MeetingMenuPop;
 import com.tydic.cm.util.CacheUtil;
 import com.tydic.cm.util.ConvertUtil;
 import com.tydic.cm.util.PermissionUtils;
-import com.tydic.cm.util.ScreenUtil;
 import com.tydic.cm.util.T;
 
 import java.util.HashMap;
@@ -366,5 +364,4 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
             }
         }
     }
-
 }
