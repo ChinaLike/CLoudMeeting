@@ -655,9 +655,20 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     public void OnAnyChatCameraStateChgMessage(int dwUserId, int dwState) {
         Log.e("OnAnyChatCameraStateChg", dwUserId + " " + dwState);
         feedbackState(Key.UPDATE_CLIENT_STATUS);
-        if (handler != null) {
-            handler.sendEmptyMessageDelayed(0, 500);
+        if (dwUserId != selfUserId) {
+            for (UsersBean bean : surfaceBeanList) {
+                int userId = Integer.parseInt(bean.getUserId());
+                if (userId == dwUserId) {
+                    bean.setVideoStatus(dwState + "");
+                    adapter.notifyItemChanged(surfaceBeanList.indexOf(bean));
+                    return;
+                }
+            }
         }
+ //       adapter.notifyItemChanged(0);
+//        if (handler != null) {
+//            handler.sendEmptyMessageDelayed(0, 500);
+//        }
     }
 
     @Override

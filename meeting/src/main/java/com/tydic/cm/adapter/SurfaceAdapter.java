@@ -64,54 +64,114 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
     public void onBindViewHolder(SurfaceViewHolder holder, int position) {
         UsersBean bean = mList.get(position);
         holder.parent.setLayoutParams(params);
-        //显示参会人员名字
-        if (mList.get(position).getNickName() != null) {
-            holder.tvName.setVisibility(View.VISIBLE);
-        } else {
-            holder.tvName.setVisibility(View.GONE);
-        }
-        holder.tvName.setText(bean.getNickName());
-        int userID = Integer.parseInt(bean.getUserId());
-        //显示摄像头关闭的参会人员,未加入会议的空位显示
-        if (bean.getVideoStatus().equals(Key.VIDEO_CLOSE) && bean.getNickName() != null && !bean.getNickName().equals("")) {
-            holder.surfaceLayout.setVisibility(View.GONE);
-            holder.camera_img.setVisibility(View.VISIBLE);
-            holder.camera_img.setImageResource(R.drawable.shut_camera);
-            holder.parent.setBackgroundColor(0xFF12182d);
-        } else if (bean.getVideoStatus().equals(Key.VIDEO_OPEN)) {
-            holder.surfaceLayout.setVisibility(View.VISIBLE);
-            holder.camera_img.setVisibility(View.GONE);
-        } else {
-            //没有摄像头图片
-            holder.surfaceLayout.setVisibility(View.GONE);
-            holder.camera_img.setVisibility(View.GONE);
-//            holder.parent.setVisibility(View.GONE);
-        }
-
+        nickName(holder.tvName, bean);
         initLocalSurface(position, bean);
-        if (bean.getVideoStatus().equals(Key.VIDEO_OPEN)) {
-            if (userID == selfID) {
+        videoControl(holder.surfaceLayout, holder.camera_img, holder.parent, bean);
+        audioControl(bean);
+    }
 
-                // 视频如果是采用java采集
-                holder.surfaceLayout.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-                if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-                    holder.surfaceLayout.getHolder().addCallback(AnyChatCoreSDK.mCameraHelper);
-                }
-                if (bean.getVideoStatus().equals(Key.VIDEO_OPEN)) {
-                    anychat.UserCameraControl(-1, 1);
-                } else {
-                    anychat.UserCameraControl(-1, 0);
-                }
-                if (bean.getAudioStatus().equals(Key.AUDIO_OPEN)) {
-                    anychat.UserSpeakControl(-1, 1);
-                } else {
-                    anychat.UserSpeakControl(-1, 0);
-                }
-                //    holder.surfaceLayout.setZOrderOnTop(false);
+    /**
+     * 设置昵称
+     *
+     * @param textView
+     * @param bean
+     */
+    private void nickName(TextView textView, UsersBean bean) {
+        int userId = Integer.parseInt(bean.getUserId());
+        if (userId == 0 || bean.getNickName() == null) {
+            textView.setText("");
+        } else {
+            textView.setText(bean.getNickName());
+        }
+    }
+
+    /**
+     * 视频控制
+     *
+     * @param surfaceView
+     * @param imageView
+     * @param layout
+     * @param bean
+     */
+    private void videoControl(SurfaceView surfaceView, ImageView imageView, RelativeLayout layout, UsersBean bean) {
+        String videoStatus = bean.getVideoStatus();
+        int userId = Integer.parseInt(bean.getUserId());
+        boolean isValid = userId == 0 ? false : true;
+        if (videoStatus.equals(Key.VIDEO_OPEN) && isValid) {
+            //打开视频
+            surfaceView.setVisibility(View.VISIBLE);
+            imageView.setVisibility(View.GONE);
+            if (userId == selfID) {
+                initLocalVideo(surfaceView.getHolder());
             } else {
-                initNetSurface(holder.surfaceLayout, bean);
-                //     holder.surfaceLayout.setZOrderOnTop(true);
+                initNetSurface(surfaceView.getHolder(),bean);
             }
+            //   anychat.UserCameraControl(-1, 1);//本地流开始上传
+        } else if (videoStatus.equals(Key.VIDEO_CLOSE) && isValid) {
+            //关闭视频
+            closeCamera(bean);//先关闭摄像头释放资源
+            surfaceView.setVisibility(View.GONE);
+            imageView.setVisibility(View.VISIBLE);
+            imageView.setImageResource(R.drawable.shut_camera);//设置关闭摄像头标志
+            layout.setBackgroundColor(0xFF12182d);//设置背景颜色
+            //  anychat.UserCameraControl(-1, 0);//本地流停止上传
+        } else if (videoStatus.equals(Key.VIDEO_NO) && isValid) {
+            //没有摄像头
+            closeCamera(bean);//先关闭摄像头释放资源
+            surfaceView.setVisibility(View.GONE);
+            imageView.setVisibility(View.VISIBLE);
+            imageView.setImageResource(R.drawable.shut_camera);//设置没有摄像头标志
+            layout.setBackgroundColor(0xFF12182d);//设置背景颜色
+            //  anychat.UserCameraControl(-1, 0);//本地流停止上传
+        } else {
+            //对视频不处理
+            closeCamera(bean);//先关闭摄像头释放资源
+            surfaceView.setVisibility(View.GONE);
+            imageView.setVisibility(View.VISIBLE);
+            //   anychat.UserCameraControl(-1, 0);//本地流停止上传
+        }
+    }
+
+    /**
+     * 关闭摄像头
+     * @param bean
+     */
+    private void closeCamera(UsersBean bean){
+        int userId = Integer.parseInt(bean.getUserId());
+        if (userId == selfID){
+            AnyChatCoreSDK.mCameraHelper.CloseCamera();
+        }
+    }
+
+    /**
+     * 音频控制
+     *
+     * @param bean
+     */
+    private void audioControl(UsersBean bean) {
+        String audioStatus = bean.getAudioStatus();
+        int userID = Integer.parseInt(bean.getUserId());
+        if (audioStatus.equals(Key.AUDIO_OPEN)) {
+            //打开音频
+            anychat.UserSpeakControl(userID, 1);
+        } else if (audioStatus.equals(Key.AUDIO_CLOSE)) {
+            //关闭音频
+            anychat.UserSpeakControl(userID, 0);
+        } else {
+            //对音频不处理
+        }
+    }
+
+    /**
+     * 初始化本地视频
+     *
+     * @param surfaceHolder
+     */
+    private void initLocalVideo(SurfaceHolder surfaceHolder) {
+        // 视频如果是采用java采集
+        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
+            surfaceHolder.addCallback(AnyChatCoreSDK.mCameraHelper);
         }
     }
 
@@ -170,23 +230,16 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
     /**
      * 初始化远程视频
      */
-    private void initNetSurface(SurfaceView surfaceView, UsersBean surfaceBean) {
+    private void initNetSurface(SurfaceHolder surfaceHolder, UsersBean surfaceBean) {
         int userID = Integer.parseInt(surfaceBean.getUserId());
-        int index = anychat.mVideoHelper.bindVideo(surfaceView.getHolder());
+        int index = anychat.mVideoHelper.bindVideo(surfaceHolder);
         anychat.mVideoHelper.SetVideoUser(index, userID);
 
-        //解决在关闭远程声音下有人进出房间时又能听见远程声音
-        if (surfaceBean.getAudioStatus().equals(Key.AUDIO_OPEN)) {
-            anychat.UserSpeakControl(userID, 1);
-        } else {
-            anychat.UserSpeakControl(userID, 0);
-        }
         if (surfaceBean.getVideoStatus().equals(Key.VIDEO_OPEN)) {
             anychat.UserCameraControl(userID, 1);
         } else {
             anychat.UserCameraControl(userID, 0);
         }
-
 
     }
 
