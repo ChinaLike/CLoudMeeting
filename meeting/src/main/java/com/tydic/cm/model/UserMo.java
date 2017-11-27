@@ -43,4 +43,19 @@ public class UserMo {
         return null;
     }
 
+    /**
+     * 根据主讲人ID在列表中找主讲人昵称
+     * @param list
+     * @param userId
+     * @return
+     */
+    public String getSpeakerNickName(List<UsersBean> list , int userId){
+        for (UsersBean bean :list) {
+            if (bean.getUserId().equals(""+userId)){
+                return bean.getNickName();
+            }
+        }
+        return "";
+    }
+
 }

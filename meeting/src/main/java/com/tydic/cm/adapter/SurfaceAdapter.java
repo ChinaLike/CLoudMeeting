@@ -127,7 +127,8 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
             //对视频不处理
             closeCamera(bean);//先关闭摄像头释放资源
             surfaceView.setVisibility(View.GONE);
-            imageView.setVisibility(View.VISIBLE);
+            imageView.setVisibility(View.GONE);
+            layout.setBackgroundColor(0xFF1F232E);
             //   anychat.UserCameraControl(-1, 0);//本地流停止上传
         }
     }

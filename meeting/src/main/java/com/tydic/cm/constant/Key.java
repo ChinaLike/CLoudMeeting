@@ -42,6 +42,7 @@ public interface Key {
     int COLUMN_THREE = 3;//远程视频显示3列
     int COLUMN_FOUR = 4;//远程视频显示4列
 
+    String VIDEO_OTHER = "-1";//人员已经退出，恢复摄像头初始状态
     String VIDEO_NO = "0";//没有摄像头
     String VIDEO_CLOSE = "1";//有摄像头但是是关闭状态
     String VIDEO_OPEN = "2";//摄像头打开状态

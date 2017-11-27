@@ -74,6 +74,10 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * 适配数据
      */
     private List<UsersBean> surfaceBeanList = new ArrayList<>();
+    /**
+     * 保存所有人员
+     */
+    private List<UsersBean> allUserList = new ArrayList<>();
 
 
     @Override
@@ -221,6 +225,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         int speaker = Integer.parseInt(arr[1]);
                         UsersBean bean = new UsersBean();
                         bean.setUserId(speaker + "");
+                        bean.setNickName(mUserMo.getSpeakerNickName(allUserList,speaker));
                         bean.setVideoStatus(Key.VIDEO_OPEN);
                         bean.setAudioStatus(Key.AUDIO_OPEN);
                         if (speaker == selfUserId) {
@@ -396,16 +401,22 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     private void exitRoom(int dwUserId) {
         if (surfaceBeanList.size() == 1) {
-            //主讲人退出
-            //  T.showShort("主讲人已经退出，正在获取房间其他人员信息！");
-            refreshCamera(Key.VIDEO_OPEN);//回复本地摄像头状态
-            refreshMic(Key.AUDIO_OPEN);//回复本地语音状态
-            mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+            int userId = Integer.parseInt(surfaceBeanList.get(0).getUserId());
+            if (userId == dwUserId){
+                //主讲人退出
+                refreshCamera(Key.VIDEO_OPEN);//回复本地摄像头状态
+                refreshMic(Key.AUDIO_OPEN);//回复本地语音状态
+                mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
+            }else {
+                //非主讲人退出
+
+            }
+
         } else {
             for (UsersBean bean : surfaceBeanList) {
                 if (Integer.parseInt(bean.getUserId()) == dwUserId) {
                     bean.setUserId("0");
-                    bean.setVideoStatus(Key.VIDEO_CLOSE);
+                    bean.setVideoStatus(Key.VIDEO_OTHER);
                     bean.setIsPrimarySpeaker(Key.NO_SPEAKER);
                     bean.setNickName("");
                     int index = surfaceBeanList.indexOf(bean);
@@ -450,6 +461,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 //获取在线人员列表
                 L.d(TAG, "在线人员列表：" + obj.toString());
                 surfaceBeanList.clear();
+                allUserList.clear();
+                allUserList.addAll((List<UsersBean>) obj);
                 UsersBean speaker = mUserMo.getSpeaker((List<UsersBean>) obj);
                 if (speaker != null) {
                     //已有主讲人
