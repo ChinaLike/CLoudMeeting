@@ -23,6 +23,7 @@ import com.tydic.cm.model.inf.LocalHelper;
 import com.tydic.cm.model.inf.OnAudioStateChangeListener;
 import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnLocationListener;
+import com.tydic.cm.model.inf.OnRequestListener;
 import com.tydic.cm.model.inf.OnVideoStateChangeListener;
 import com.tydic.cm.overwrite.LocationPop;
 import com.tydic.cm.overwrite.MeetingMenuPop;
@@ -73,12 +74,10 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * 适配数据
      */
     private List<UsersBean> surfaceBeanList = new ArrayList<>();
-    private VideoHandler handler;
 
 
     @Override
     protected void init(@Nullable Bundle savedInstanceState) {
-        handler = new VideoHandler(this);
         meetingMenuPop.setMenuClickListener(this);
         mOnlinePop = new OnlinePop(this, mJsParamsBean);
         mOnlinePop.onLineUser();
@@ -327,6 +326,36 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     }
 
     /**
+     * 当有人进入时获取用户昵称
+     * @param index
+     * @param bean
+     */
+    private void compareData(final int index , final UsersBean bean){
+        //此处获取用户信息，当用户信息获取完毕后刷新对应数据
+        final  String userId = bean.getUserId();
+        mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), new OnRequestListener() {
+            @Override
+            public void onSuccess(int type, Object obj) {
+                List<UsersBean> list = (List<UsersBean>) obj;
+                for (UsersBean item :list) {
+                    if (userId.equals(item.getUserId())){
+                        bean.setNickName(item.getNickName());
+                        bean.setMeetingId(item.getMeetingId());
+                        bean.setYhyUserId(item.getYhyUserId());
+                        adapter.notifyItemChanged(index);
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void onError(int type, int code) {
+                adapter.notifyItemChanged(index);
+            }
+        });
+    }
+
+    /**
      * 有人进入房间
      *
      * @param dwUserId
@@ -351,7 +380,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                     audio.refreshDistanceAudio(bean);
                     bean.setVideoStatus(Key.VIDEO_OPEN);
                     bean.setIsPrimarySpeaker(Key.NO_SPEAKER);
-                    adapter.notifyItemChanged(i);
+                    compareData(i,bean);
+                    // adapter.notifyItemChanged(i);
                     return;
                 }
             }
@@ -665,10 +695,6 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 }
             }
         }
- //       adapter.notifyItemChanged(0);
-//        if (handler != null) {
-//            handler.sendEmptyMessageDelayed(0, 500);
-//        }
     }
 
     @Override
@@ -686,21 +712,4 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     }
 
-    private class VideoHandler extends Handler {
-        WeakReference<Activity> mWeakReference;
-
-        public VideoHandler(Activity activity) {
-            mWeakReference = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            final Activity activity = mWeakReference.get();
-            if (activity != null) {
-                if (msg.what == 0) {
-                    mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), CommonActivity.this);
-                }
-            }
-        }
-    }
 }
