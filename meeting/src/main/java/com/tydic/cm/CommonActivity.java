@@ -1,14 +1,12 @@
 package com.tydic.cm;
 
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -27,6 +25,7 @@ import com.tydic.cm.model.inf.OnRequestListener;
 import com.tydic.cm.model.inf.OnVideoStateChangeListener;
 import com.tydic.cm.overwrite.LocationPop;
 import com.tydic.cm.overwrite.MeetingMenuPop;
+import com.tydic.cm.overwrite.MenuLayout;
 import com.tydic.cm.overwrite.OnlinePop;
 import com.tydic.cm.overwrite.SimpleDividerItemDecoration;
 import com.tydic.cm.util.CollectionsUtil;
@@ -34,14 +33,13 @@ import com.tydic.cm.util.L;
 import com.tydic.cm.util.T;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 普通视频模式
  */
-public class CommonActivity extends BaseActivity implements View.OnClickListener,
+public class CommonActivity extends BaseActivity implements View.OnClickListener, MenuLayout.MenuClickListener,
         MeetingMenuPop.MenuClickListener, OnItemClickListener, OnLocationListener, LocalHelper {
 
     private RelativeLayout rootView;
@@ -56,7 +54,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     private FrameLayout localParent;
 
-    private ImageView cameraStatus, camera, microphone, sound, menu;//摄像头的状态，摄像头切换，本地麦克风，远程麦克风，菜单
+    private MenuLayout menuLayout;//功能菜单
 
     private OnlinePop mOnlinePop;
 
@@ -113,16 +111,19 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         selfSurface = (SurfaceView) findViewById(R.id.self_surface);
         localParent = (FrameLayout) findViewById(R.id.local_parent);
         rootView = (RelativeLayout) findViewById(R.id.root);
-        cameraStatus = (ImageView) findViewById(R.id.meeting_transcribe);
-        cameraStatus.setOnClickListener(this);
-        camera = (ImageView) findViewById(R.id.meeting_camera);
-        camera.setOnClickListener(this);
-        microphone = (ImageView) findViewById(R.id.meeting_microphone);
-        microphone.setOnClickListener(this);
-        sound = (ImageView) findViewById(R.id.meeting_sound);
-        sound.setOnClickListener(this);
-        menu = (ImageView) findViewById(R.id.meeting_menu);
-        menu.setOnClickListener(this);
+
+        menuLayout = (MenuLayout) findViewById(R.id.menu_layout);
+        menuLayout.setMenuClickListener(this);
+//        cameraStatus = (ImageView) findViewById(R.id.meeting_transcribe);
+//        cameraStatus.setOnClickListener(this);
+//        camera = (ImageView) findViewById(R.id.meeting_camera);
+//        camera.setOnClickListener(this);
+//        microphone = (ImageView) findViewById(R.id.meeting_microphone);
+//        microphone.setOnClickListener(this);
+//        sound = (ImageView) findViewById(R.id.meeting_sound);
+//        sound.setOnClickListener(this);
+//        menu = (ImageView) findViewById(R.id.meeting_menu);
+//        menu.setOnClickListener(this);
     }
 
     /**
@@ -159,19 +160,19 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                     case Key.CLIENT_DISABLE_MIC:
                         T.showShort("您的麦克风被管理员关闭");
                         audio.setSpeaking(true);
-                        microphone.performClick();
+                        menuLayout.performClick(MenuLayout.TYPE_MICROPHONE);
                         break;
                     case Key.CLIENT_ENAble_MIC:
                         T.showShort("您的麦克风被管理员打开");
                         audio.setSpeaking(false);
-                        microphone.performClick();
+                        menuLayout.performClick(MenuLayout.TYPE_MICROPHONE);
                         break;
                     case Key.CLIENT_DISABLE_VIDEO:
                         if (video.isHasCamera()) {
                             //有摄像头
                             T.showShort("您的摄像头被管理员关闭");
                             video.setOpenCamera(true);
-                            cameraStatus.performClick();
+                            menuLayout.performClick(MenuLayout.TYPE_TRANSCRIBE);
                         } else {
                             //没有摄像头
                             video.setOpenCamera(false);
@@ -182,7 +183,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                             //有摄像头
                             T.showShort("您的摄像头被管理员打开");
                             video.setOpenCamera(false);
-                            cameraStatus.performClick();
+                            menuLayout.performClick(MenuLayout.TYPE_TRANSCRIBE);
                         } else {
                             //没有摄像头
                             video.setOpenCamera(false);
@@ -225,7 +226,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         int speaker = Integer.parseInt(arr[1]);
                         UsersBean bean = new UsersBean();
                         bean.setUserId(speaker + "");
-                        bean.setNickName(mUserMo.getSpeakerNickName(allUserList,speaker));
+                        bean.setNickName(mUserMo.getSpeakerNickName(allUserList, speaker));
                         bean.setVideoStatus(Key.VIDEO_OPEN);
                         bean.setAudioStatus(Key.AUDIO_OPEN);
                         if (speaker == selfUserId) {
@@ -265,7 +266,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     private void refreshMic(String mic) {
         userState.setAudioStatus(mic);
-        audio.init(microphone, userState);
+        audio.init(menuLayout.getMicrophone(), userState);
         //更新状态
         feedbackState(Key.UPDATE_CLIENT_STATUS);
     }
@@ -277,7 +278,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     private void refreshCamera(String camera) {
         userState.setVideoStatus(camera);
-        video.init(cameraStatus, userState);
+        video.init(menuLayout.getTranscribe(), userState);
         //更新状态
         feedbackState(Key.UPDATE_CLIENT_STATUS);
     }
@@ -332,18 +333,27 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     /**
      * 当有人进入时获取用户昵称
+     *
      * @param index
      * @param bean
      */
-    private void compareData(final int index , final UsersBean bean){
+    private void compareData(final int index, final UsersBean bean) {
         //此处获取用户信息，当用户信息获取完毕后刷新对应数据
-        final  String userId = bean.getUserId();
+        final String userId = bean.getUserId();
+        try {
+            //等待服务处理数据（因为服务器比anychat处理数据慢一点）
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), new OnRequestListener() {
             @Override
             public void onSuccess(int type, Object obj) {
                 List<UsersBean> list = (List<UsersBean>) obj;
-                for (UsersBean item :list) {
-                    if (userId.equals(item.getUserId())){
+                allUserList.clear();
+                allUserList.addAll(list);
+                for (UsersBean item : list) {
+                    if (userId.equals(item.getUserId())) {
                         bean.setNickName(item.getNickName());
                         bean.setMeetingId(item.getMeetingId());
                         bean.setYhyUserId(item.getYhyUserId());
@@ -385,7 +395,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                     audio.refreshDistanceAudio(bean);
                     bean.setVideoStatus(Key.VIDEO_OPEN);
                     bean.setIsPrimarySpeaker(Key.NO_SPEAKER);
-                    compareData(i,bean);
+                    compareData(i, bean);
                     // adapter.notifyItemChanged(i);
                     return;
                 }
@@ -402,12 +412,12 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     private void exitRoom(int dwUserId) {
         if (surfaceBeanList.size() == 1) {
             int userId = Integer.parseInt(surfaceBeanList.get(0).getUserId());
-            if (userId == dwUserId){
+            if (userId == dwUserId) {
                 //主讲人退出
                 refreshCamera(Key.VIDEO_OPEN);//回复本地摄像头状态
                 refreshMic(Key.AUDIO_OPEN);//回复本地语音状态
                 mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
-            }else {
+            } else {
                 //非主讲人退出
 
             }
@@ -452,8 +462,8 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 //获取用户状态
                 userState = (UsersBean) obj;
                 L.d(TAG, "用户状态：" + userState.toString());
-                video.init(cameraStatus, userState);
-                audio.init(microphone, userState);
+                video.init(menuLayout.getTranscribe(), userState);
+                audio.init(menuLayout.getMicrophone(), userState);
                 //更新状态
                 feedbackState(Key.UPDATE_CLIENT_STATUS);
                 break;
@@ -545,41 +555,84 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     }
 
     @Override
-    public void onClick(View view) {
-        int id = view.getId();
-
-        if (id == R.id.meeting_transcribe) {
-            //摄像头的状态，打开，关闭，无摄像头  0-无摄像头，1-有摄像头关闭，2-有摄像头打开
-            video.changeCamera(cameraStatus, userState, new OnVideoStateChangeListener() {
-                @Override
-                public void videoStateChange() {
-                    feedbackState(Key.UPDATE_CLIENT_STATUS);
-                    if (getLocalBean() != null) {
-                        getLocalBean().setVideoStatus(userState.getVideoStatus());
-                        getLocalBean().setAudioStatus(userState.getAudioStatus());
-                        adapter.notifyItemChanged(surfaceBeanList.indexOf(getLocalBean()));
+    public void onMenuClick(int type, ImageView imageView) {
+        switch (type) {
+            case MenuLayout.TYPE_TRANSCRIBE:
+                //摄像头的状态，打开，关闭，无摄像头  0-无摄像头，1-有摄像头关闭，2-有摄像头打开
+                video.changeCamera(imageView, userState, new OnVideoStateChangeListener() {
+                    @Override
+                    public void videoStateChange() {
+                        feedbackState(Key.UPDATE_CLIENT_STATUS);
+                        if (getLocalBean() != null) {
+                            getLocalBean().setVideoStatus(userState.getVideoStatus());
+                            getLocalBean().setAudioStatus(userState.getAudioStatus());
+                            adapter.notifyItemChanged(surfaceBeanList.indexOf(getLocalBean()));
+                        }
                     }
-                }
-            });
-        } else if (id == R.id.meeting_camera) {
-            //摄像头的前后转换
-            video.switchCamera();
-        } else if (id == R.id.meeting_microphone) {
-            //本地声音
-            audio.changeLocal(microphone, userState, new OnAudioStateChangeListener() {
-                @Override
-                public void audioStateChange() {
-                    feedbackState(Key.UPDATE_CLIENT_STATUS);
-                }
-            });
-        } else if (id == R.id.meeting_sound) {
-            //远程声音
-            audio.changeDistance(sound);
+                });
+                break;
+            case MenuLayout.TYPE_CAMERA:
+                //摄像头的前后转换
+                video.switchCamera();
+                break;
+            case MenuLayout.TYPE_MICROPHONE:
+                //本地声音
+                audio.changeLocal(imageView, userState, new OnAudioStateChangeListener() {
+                    @Override
+                    public void audioStateChange() {
+                        feedbackState(Key.UPDATE_CLIENT_STATUS);
+                    }
+                });
+                break;
+            case MenuLayout.TYPE_SOUND:
+                //远程声音
+                audio.changeDistance(imageView);
+                break;
+            case MenuLayout.TYPE_FUN:
+                //菜单键
+                meetingMenuPop.show(rootView);
+                break;
+            default:
+                break;
         }
-        if (id == R.id.meeting_menu) {
-            //菜单键
-            meetingMenuPop.show(rootView);
-        }
+    }
+
+    @Override
+    public void onClick(View view) {
+//        int id = view.getId();
+//
+//        if (id == R.id.meeting_transcribe) {
+//            //摄像头的状态，打开，关闭，无摄像头  0-无摄像头，1-有摄像头关闭，2-有摄像头打开
+//            video.changeCamera(cameraStatus, userState, new OnVideoStateChangeListener() {
+//                @Override
+//                public void videoStateChange() {
+//                    feedbackState(Key.UPDATE_CLIENT_STATUS);
+//                    if (getLocalBean() != null) {
+//                        getLocalBean().setVideoStatus(userState.getVideoStatus());
+//                        getLocalBean().setAudioStatus(userState.getAudioStatus());
+//                        adapter.notifyItemChanged(surfaceBeanList.indexOf(getLocalBean()));
+//                    }
+//                }
+//            });
+//        } else if (id == R.id.meeting_camera) {
+//            //摄像头的前后转换
+//            video.switchCamera();
+//        } else if (id == R.id.meeting_microphone) {
+//            //本地声音
+//            audio.changeLocal(microphone, userState, new OnAudioStateChangeListener() {
+//                @Override
+//                public void audioStateChange() {
+//                    feedbackState(Key.UPDATE_CLIENT_STATUS);
+//                }
+//            });
+//        } else if (id == R.id.meeting_sound) {
+//            //远程声音
+//            audio.changeDistance(sound);
+//        }
+//        if (id == R.id.meeting_menu) {
+//            //菜单键
+//            meetingMenuPop.show(rootView);
+//        }
     }
 
     @Override
