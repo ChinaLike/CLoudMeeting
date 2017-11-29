@@ -1,5 +1,6 @@
 package com.tydic.cm.overwrite;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -12,7 +13,9 @@ import com.nineoldandroids.animation.AnimatorSet;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.tydic.cm.R;
 import com.tydic.cm.util.ConvertUtil;
-import com.tydic.cm.util.ScreenUtil;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * 功能菜单键，
@@ -46,6 +49,26 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
      * 是否退出
      */
     private boolean isExit = false;
+    /**
+     * 触摸的时间
+     */
+    private long touchTime = System.currentTimeMillis();
+    /**
+     * 多久无响应后影藏功能栏
+     */
+    private final static long TIME = 5000;
+
+    private Timer mTimer = new Timer();
+
+    private TimerTask mTimerTask = new TimerTask() {
+        @Override
+        public void run() {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - touchTime > TIME && !isExit){
+                endAnimation();
+            }
+        }
+    };
 
     private Context mContext;
 
@@ -61,9 +84,8 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
         super(context, attrs, defStyleAttr);
         this.mContext = context;
         ConvertUtil.init(context);
-        isExit = true;
         init(context);
-
+        mTimer.schedule(mTimerTask,500,1000);
     }
 
     private void init(Context context) {
@@ -86,10 +108,9 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        touchTime = System.currentTimeMillis();
         if (isExit) {
             startAnimation();
-        } else {
-            endAnimation();
         }
         return false;
     }
@@ -101,8 +122,9 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
         isExit = false;
         AnimatorSet set = new AnimatorSet();
         set.playTogether(
-                ObjectAnimator.ofFloat(top_menu, "translationY", -ConvertUtil.dp2px(60), 0)
-               // ,ObjectAnimator.ofFloat(bottom_menu, "translationY", ScreenUtil.getScreenHeight(mContext), ScreenUtil.getScreenHeight(mContext) - ConvertUtil.dp2px(60))
+                ObjectAnimator.ofFloat(top_menu, "translationY", -ConvertUtil.dp2px(60), 0),
+                ObjectAnimator.ofFloat(bottom_menu, "translationY", ConvertUtil.dp2px(60), 0)
+
         );
         set.setDuration(200).start();
     }
@@ -111,13 +133,18 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
      * 退出动画
      */
     public void endAnimation() {
-        isExit = true;
-        AnimatorSet set = new AnimatorSet();
-        set.playTogether(
-                ObjectAnimator.ofFloat(top_menu, "translationY", 0, -ConvertUtil.dp2px(60))
-               // ,ObjectAnimator.ofFloat(bottom_menu, "translationY", ScreenUtil.getScreenHeight(mContext) - ConvertUtil.dp2px(60), ScreenUtil.getScreenHeight(mContext))
-        );
-        set.setDuration(200).start();
+        ((Activity)mContext).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                isExit = true;
+                AnimatorSet set = new AnimatorSet();
+                set.playTogether(
+                        ObjectAnimator.ofFloat(top_menu, "translationY", 0, -ConvertUtil.dp2px(60)), ObjectAnimator.ofFloat(bottom_menu, "translationY", 0, ConvertUtil.dp2px(60))
+                );
+                set.setDuration(200).start();
+            }
+        });
+
     }
 
     @Override
