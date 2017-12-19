@@ -3,8 +3,8 @@
     android:layout_width="260dp"
     android:layout_height="190dp"
     android:background="@drawable/img_menu_bg"
-    android:padding="10dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="10dp">
 
     <LinearLayout
         android:layout_width="240dp"
@@ -86,28 +86,29 @@
         android:layout_marginTop="10dp"
         android:orientation="horizontal">
 
-
         <LinearLayout
-            android:id="@+id/llExit"
+            android:id="@+id/carousel"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:gravity="center"
+            android:visibility="gone"
             android:orientation="vertical">
 
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@mipmap/img_meeting_shrink" />
+                android:src="@mipmap/img_meeting_carousel" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:gravity="center"
-                android:text="退出全屏"
+                android:text="轮播设置"
                 android:textColor="#fff" />
 
         </LinearLayout>
+
 
         <LinearLayout
             android:id="@+id/llPwd"
@@ -131,29 +132,51 @@
 
         </LinearLayout>
 
+        <!--<LinearLayout-->
+        <!--android:id="@+id/llMaterial"-->
+        <!--android:layout_width="80dp"-->
+        <!--android:layout_height="80dp"-->
+        <!--android:gravity="center"-->
+        <!--android:orientation="vertical"-->
+        <!--android:visibility="gone">-->
+
+        <!--<ImageView-->
+        <!--android:layout_width="40dp"-->
+        <!--android:layout_height="40dp"-->
+        <!--android:src="@mipmap/img_meeting_file" />-->
+
+        <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="5dp"-->
+        <!--android:gravity="center"-->
+        <!--android:text="会议材料"-->
+        <!--android:textColor="#fff" />-->
+
+        <!--</LinearLayout>-->
+
+
         <LinearLayout
-            android:id="@+id/llMaterial"
+            android:id="@+id/llExit"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="invisible">
+            android:orientation="vertical">
 
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:src="@mipmap/img_meeting_file" />
+                android:src="@mipmap/img_meeting_shrink" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:gravity="center"
-                android:text="会议材料"
+                android:text="退出全屏"
                 android:textColor="#fff" />
 
         </LinearLayout>
-
     </LinearLayout>
 
 </LinearLayout>

@@ -50,8 +50,8 @@ public class OnlinePop extends RelativePopupWindow implements OnRequestListener 
         this.bean = bean;
         View view = LayoutInflater.from(context).inflate(R.layout.pop_online_list, null);
         setContentView(view);
-        tvNum = view.findViewById(R.id.tvNum);
-        recyclerView = view.findViewById(R.id.recyclerView);
+        tvNum = (TextView) view.findViewById(R.id.tvNum);
+        recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
 
         mRetrofitMo = new RetrofitMo(context);
 

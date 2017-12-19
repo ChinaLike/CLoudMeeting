@@ -1,0 +1,7 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:drawable="@mipmap/img_carousel_selected" android:state_checked="true" />
+    <item android:drawable="@mipmap/img_carousel_unselected" android:state_checked="false" />
+    <item android:drawable="@mipmap/img_carousel_unselected" />
+
+</selector>

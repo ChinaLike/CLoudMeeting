@@ -18,6 +18,7 @@ import com.tydic.cm.R;
 import com.tydic.cm.bean.JsParamsBean;
 import com.tydic.cm.model.JsAndroidModule;
 import com.tydic.cm.util.ConvertUtil;
+import com.tydic.cm.util.T;
 
 /**
  * 功能菜单键
@@ -51,8 +52,7 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
         view.findViewById(R.id.llShare).setOnClickListener(this);
         view.findViewById(R.id.llExit).setOnClickListener(this);
         view.findViewById(R.id.llPwd).setOnClickListener(this);
-        view.findViewById(R.id.llMaterial).setOnClickListener(this);
-
+        view.findViewById(R.id.carousel).setOnClickListener(this);
 //        setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
 //        setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         setWidth(ConvertUtil.dp2px(260));
@@ -146,11 +146,12 @@ public class MeetingMenuPop extends RelativePopupWindow implements View.OnClickL
                 return;
             }
             menuClickListener.onClick(4);
-        } else if (id == R.id.llMaterial) {
+        } else if (id == R.id.carousel) {
             if (isBroadcast(Integer.parseInt(bean.getIsBroadcastMode()))) {
-                return;
+                T.showShort("当前为直播模式,不可设置视频轮播!");
+            } else {
+                menuClickListener.onClick(5);
             }
-            menuClickListener.onClick(5);
         }
 
         if (id == R.id.llExit) {

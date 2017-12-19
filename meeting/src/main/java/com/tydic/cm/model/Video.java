@@ -55,10 +55,11 @@ public class Video {
 
     /**
      * 初始化摄像头
+     *
      * @param view
      * @param userState
      */
-    public void init(ImageView view , UsersBean userState){
+    public void init(ImageView view, UsersBean userState) {
         this.videoState = userState.getVideoStatus();
         if (this.videoState.equals(Key.VIDEO_OPEN)) {
             view.setImageResource(R.drawable.img_meeting_camera_open);
@@ -73,6 +74,7 @@ public class Video {
 
     /**
      * 设置摄像头状态
+     *
      * @param view
      * @param userState
      * @param listener
@@ -106,7 +108,7 @@ public class Video {
     /**
      * 前后摄像头切换
      */
-    public void switchCamera(){
+    public void switchCamera() {
         AnyChatCoreSDK.mCameraHelper.SwitchCamera();
     }
 

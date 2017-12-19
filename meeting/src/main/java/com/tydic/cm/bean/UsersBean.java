@@ -9,6 +9,14 @@ import java.io.Serializable;
 
 public class UsersBean implements Serializable {
 
+    public boolean isChecked() {
+        return isChecked;
+    }
+
+    public void setChecked(boolean checked) {
+        isChecked = checked;
+    }
+
     /**
      * userId : -1111
      * nickName : 阚巍_林芝
@@ -19,6 +27,8 @@ public class UsersBean implements Serializable {
      * displayMode : 1
      * isPrimarySpeaker : 0
      */
+    //复选框
+    private boolean isChecked = false;
 
     private String userId;
     private String nickName;
@@ -74,7 +84,7 @@ public class UsersBean implements Serializable {
     }
 
     public String getVideoStatus() {
-        if (videoStatus == null || videoStatus.equals("")){
+        if (videoStatus == null || videoStatus.equals("")) {
             return "2";
         }
         return videoStatus;
@@ -85,7 +95,7 @@ public class UsersBean implements Serializable {
     }
 
     public Integer getDisplayMode() {
-        if (displayMode == null){
+        if (displayMode == null) {
             return 1;
         }
         return displayMode;

@@ -17,7 +17,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
         <activity android:name="com.tydic.cm.OnLiveActivity" />
-        <activity android:name="com.tydic.cm.CommonActivity"></activity>
+        <activity android:name="com.tydic.cm.CommonActivity" />
+        <activity android:name="com.tydic.cm.InitializeSettingsActivity" />
+
     </application>
 
 </manifest>

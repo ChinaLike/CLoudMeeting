@@ -72,7 +72,11 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
     @Override
     public void onBindViewHolder(OnLinePeopleViewHolder holder, final int position) {
         final UsersBean bean = mList.get(position);
-        holder.tvName.setText(bean.getNickName());
+        if (bean.getIsPrimarySpeaker().equals("1")) {
+            holder.tvName.setText(bean.getNickName() + "(主讲人)");
+        } else {
+            holder.tvName.setText(bean.getNickName());
+        }
         holder.tvLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -104,7 +108,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
             holder.tvSpeak.setText("取消发言");
         } else {
             holder.iv.setImageResource(R.mipmap.meeting_fullscreen_microphone_disable);
-            holder.tvSpeak.setText("发言");
+            holder.tvSpeak.setText("允许发言");
         }
 
         holder.tvVideo.setOnClickListener(new View.OnClickListener() {
@@ -128,7 +132,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
         if ("2".equals(bean.getVideoStatus())) {
             holder.tvVideo.setText("关闭视频");
         } else {
-            holder.tvVideo.setText("视频");
+            holder.tvVideo.setText("开启视频");
         }
 
         holder.tvSpeaker.setOnClickListener(new View.OnClickListener() {
@@ -152,7 +156,7 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
         if ("1".equals(bean.getIsPrimarySpeaker())) {
             holder.tvSpeaker.setText("取消主讲人");
         } else {
-            holder.tvSpeaker.setText("主讲人");
+            holder.tvSpeaker.setText("设定主讲人");
         }
 
         if (!canCtrl) {
@@ -171,9 +175,9 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
             holder.tvLocation.setVisibility(View.VISIBLE);
         }
 
-        if (isHasPrimarySpeaker()){
+        if (isHasPrimarySpeaker()) {
             holder.tvLocation.setVisibility(View.GONE);
-        }else {
+        } else {
             holder.tvLocation.setVisibility(View.VISIBLE);
         }
 
@@ -243,13 +247,13 @@ public class OnLinePeopleAdapter extends RecyclerView.Adapter<OnLinePeopleAdapte
 
         public OnLinePeopleViewHolder(View itemView) {
             super(itemView);
-            iv = itemView.findViewById(R.id.iv);
-            tvName = itemView.findViewById(R.id.tvName);
-            tvSpeaker = itemView.findViewById(R.id.tvSpeaker);
-            tvVideo = itemView.findViewById(R.id.tvVideo);
-            tvSpeak = itemView.findViewById(R.id.tvSpeak);
-            tvLocation = itemView.findViewById(R.id.tvLocation);
-            parent = itemView.findViewById(R.id.parent);
+            iv = (ImageView) itemView.findViewById(R.id.iv);
+            tvName = (TextView) itemView.findViewById(R.id.tvName);
+            tvSpeaker = (TextView) itemView.findViewById(R.id.tvSpeaker);
+            tvVideo = (TextView) itemView.findViewById(R.id.tvVideo);
+            tvSpeak = (TextView) itemView.findViewById(R.id.tvSpeak);
+            tvLocation = (TextView) itemView.findViewById(R.id.tvLocation);
+            parent = (LinearLayout) itemView.findViewById(R.id.parent);
         }
     }
 

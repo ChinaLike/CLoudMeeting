@@ -45,7 +45,7 @@
     <RelativeLayout
         android:id="@+id/bottom_menu"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="110dp"
         android:layout_alignParentBottom="true"
         android:padding="10dp">
 
@@ -53,8 +53,18 @@
             android:id="@+id/meeting_menu"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:src="@drawable/img_meeting_menu_button" />
+
+        <ImageView
+            android:id="@+id/meeting_user_list"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="@+id/meeting_menu"
+            android:src="@drawable/img_meeting_user_list" />
     </RelativeLayout>
 
 </RelativeLayout>

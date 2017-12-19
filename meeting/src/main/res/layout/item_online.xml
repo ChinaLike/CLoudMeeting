@@ -19,64 +19,73 @@
             android:id="@+id/iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
+            android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp" />
 
         <TextView
             android:id="@+id/tvName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="1.3"
             android:ellipsize="end"
             android:gravity="center_vertical"
             android:lines="1"
             android:textColor="#fff"
+            android:textSize="14sp"
             tools:text=""
             tools:textColor="#000" />
 
-        <TextView
-            android:id="@+id/tvSpeaker"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
+            android:layout_weight="2"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp">
 
-            android:textColor="@color/meeting_list_yellow"
-            android:textSize="12sp"
-            tools:text="主讲人" />
+            <TextView
+                android:id="@+id/tvSpeaker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:textColor="@color/meeting_list_yellow"
+                android:textSize="12sp"
+                tools:text="主讲人" />
 
-        <TextView
-            android:id="@+id/tvVideo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:textColor="@color/meeting_list_yellow"
-            android:textSize="12sp"
-            tools:text="视频" />
+            <TextView
+                android:id="@+id/tvVideo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:textColor="@color/meeting_list_yellow"
+                android:textSize="12sp"
+                tools:text="视频" />
 
-        <TextView
-            android:id="@+id/tvSpeak"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:textColor="@color/meeting_list_yellow"
-            android:textSize="12sp"
-            tools:text="取消发言" />
+            <TextView
+                android:id="@+id/tvSpeak"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:textColor="@color/meeting_list_yellow"
+                android:textSize="12sp"
+                tools:text="取消发言" />
 
-        <TextView
-            android:id="@+id/tvLocation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:text="视频设置"
-            android:textColor="@color/meeting_list_yellow"
-            android:textSize="12sp" />
-
+            <TextView
+                android:id="@+id/tvLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:text="视频设置"
+                android:textColor="@color/meeting_list_yellow"
+                android:textSize="12sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="0.7dp"
-        android:layout_marginLeft="20dp"
+        android:layout_marginLeft="10dp"
         android:background="@color/text_content" />
 </LinearLayout>

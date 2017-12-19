@@ -16,7 +16,8 @@ import com.bairuitech.anychat.AnyChatDefine;
 import com.tydic.cm.R;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
-import com.tydic.cm.model.inf.LocalHelper;
+import com.tydic.cm.helper.LocalViewHelper;
+import com.tydic.cm.util.CacheUtil;
 import com.tydic.cm.util.ScreenUtil;
 
 import java.util.List;
@@ -40,15 +41,13 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
 
     private AnyChatCoreSDK anychat;
     /**
-     * 本地视频显示的位置
-     */
-    private LocalHelper mLocalHelper;
-    /**
      * 列数
      */
     private int column = 1;
 
     private int selfID;
+
+    private LocalViewHelper localViewHelper;
 
     public SurfaceAdapter(Context mContext, List<UsersBean> mList) {
         this.mContext = mContext;
@@ -65,9 +64,16 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
         UsersBean bean = mList.get(position);
         holder.parent.setLayoutParams(params);
         nickName(holder.tvName, bean);
-        initLocalSurface(position, bean);
         videoControl(holder.surfaceLayout, holder.camera_img, holder.parent, bean);
         audioControl(bean);
+    }
+
+    /**
+     * 设置本地视图移除监听
+     * @param localViewHelper
+     */
+    public void setLocalViewHelper(LocalViewHelper localViewHelper) {
+        this.localViewHelper = localViewHelper;
     }
 
     /**
@@ -102,11 +108,15 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
             surfaceView.setVisibility(View.VISIBLE);
             imageView.setVisibility(View.GONE);
             if (userId == selfID) {
+                //在轮播状态下监听才回掉&& "1".equals(mCacheUtil.getAsString(Key.IS_START))
+                if (localViewHelper != null ){
+                    localViewHelper.removeView();
+                }
                 initLocalVideo(surfaceView.getHolder());
             } else {
-                initNetSurface(surfaceView.getHolder(),bean);
+                initNetSurface(surfaceView.getHolder(), bean);
             }
-            //   anychat.UserCameraControl(-1, 1);//本地流开始上传
+//               anychat.UserCameraControl(-1, 1);//本地流开始上传
         } else if (videoStatus.equals(Key.VIDEO_CLOSE) && isValid) {
             //关闭视频
             closeCamera(bean);//先关闭摄像头释放资源
@@ -135,11 +145,12 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
 
     /**
      * 关闭摄像头
+     *
      * @param bean
      */
-    private void closeCamera(UsersBean bean){
+    private void closeCamera(UsersBean bean) {
         int userId = Integer.parseInt(bean.getUserId());
-        if (userId == selfID){
+        if (userId == selfID) {
             AnyChatCoreSDK.mCameraHelper.CloseCamera();
         }
     }
@@ -168,13 +179,14 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
      *
      * @param surfaceHolder
      */
-    private void initLocalVideo(SurfaceHolder surfaceHolder) {
+    private void initLocalVideo(final SurfaceHolder surfaceHolder) {
         // 视频如果是采用java采集
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
             surfaceHolder.addCallback(AnyChatCoreSDK.mCameraHelper);
         }
     }
+
 
     @Override
     public int getItemCount() {
@@ -186,7 +198,8 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
         } else {
             params = new RelativeLayout.LayoutParams(width - 1, height);
         }
-        return mList == null ? 0 : mList.size();
+        int size = mList == null ? 0 : mList.size();
+        return size;
     }
 
     public void setSelfID(int selfID) {
@@ -200,32 +213,6 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
      */
     public void setColumn(int column) {
         this.column = column;
-    }
-
-    public void setLocalHelper(LocalHelper mLocalHelper) {
-        this.mLocalHelper = mLocalHelper;
-    }
-
-    /**
-     * 初始化本地
-     *
-     * @param position
-     * @param bean
-     */
-    private void initLocalSurface(int position, UsersBean bean) {
-        if (mLocalHelper != null) {
-            int x = 0;//X轴偏移位置
-            int y = 0;//Y轴偏移位置
-            if (position >= column) {
-                x = (position - column) * width;
-                y = height;
-            } else {
-                x = position * width;
-                y = 0;
-            }
-
-            mLocalHelper.local(position, bean, width, height, x, y);
-        }
     }
 
     /**
@@ -252,21 +239,37 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
      * 初始化宽高
      */
     private void initWH() {
-        if (mList == null || mList.size() == 0 || mList.size() == 1) {
+//        if (mList == null || mList.size() == 0 || mList.size() == 1) {
+//            width = ScreenUtil.getScreenWidth(mContext);
+//            height = ScreenUtil.getScreenHeight(mContext);
+//            return;
+//        }
+//        int size = mList.size();
+//        if (size > 1 && size <= 4) {
+//            //4屛
+//            width = (int) (ScreenUtil.getScreenWidth(mContext) / 2 + 0.5);
+//            height = (int) (ScreenUtil.getScreenHeight(mContext) / 2 + 0.5);
+//        } else if (size > 4 && size <= 6) {
+//            //6屛
+//            width = (int) (ScreenUtil.getScreenWidth(mContext) / 3 + 0.5);
+//            height = (int) (ScreenUtil.getScreenHeight(mContext) / 2 + 0.5);
+//        } else if (size > 6) {
+//            //8屛
+//            width = (int) (ScreenUtil.getScreenWidth(mContext) / 4 + 0.5);
+//            height = (int) (ScreenUtil.getScreenHeight(mContext) / 2 + 0.5);
+//        }
+        if (column == 1) {
             width = ScreenUtil.getScreenWidth(mContext);
             height = ScreenUtil.getScreenHeight(mContext);
-            return;
-        }
-        int size = mList.size();
-        if (size > 1 && size <= 4) {
+        } else if (column == 2) {
             //4屛
             width = (int) (ScreenUtil.getScreenWidth(mContext) / 2 + 0.5);
             height = (int) (ScreenUtil.getScreenHeight(mContext) / 2 + 0.5);
-        } else if (size > 4 && size <= 6) {
+        } else if (column == 3) {
             //6屛
             width = (int) (ScreenUtil.getScreenWidth(mContext) / 3 + 0.5);
             height = (int) (ScreenUtil.getScreenHeight(mContext) / 2 + 0.5);
-        } else if (size > 6) {
+        } else if (column == 4) {
             //8屛
             width = (int) (ScreenUtil.getScreenWidth(mContext) / 4 + 0.5);
             height = (int) (ScreenUtil.getScreenHeight(mContext) / 2 + 0.5);
@@ -285,10 +288,10 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
 
         public SurfaceViewHolder(View itemView) {
             super(itemView);
-            parent = itemView.findViewById(R.id.surface_parent);
-            surfaceLayout = itemView.findViewById(R.id.surface_view);
-            tvName = itemView.findViewById(R.id.tvName);
-            camera_img = itemView.findViewById(R.id.camera_close);
+            parent = (RelativeLayout) itemView.findViewById(R.id.surface_parent);
+            surfaceLayout = (SurfaceView) itemView.findViewById(R.id.surface_view);
+            tvName = (TextView) itemView.findViewById(R.id.tvName);
+            camera_img = (ImageView) itemView.findViewById(R.id.camera_close);
         }
     }
 

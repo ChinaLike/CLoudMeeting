@@ -1,7 +1,6 @@
 package com.tydic.cm.model;
 
 import com.tydic.cm.bean.UsersBean;
-import com.tydic.cm.config.SurfaceConfig;
 import com.tydic.cm.constant.Key;
 
 import java.util.List;

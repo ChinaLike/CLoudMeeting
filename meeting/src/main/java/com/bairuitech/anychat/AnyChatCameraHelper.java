@@ -131,11 +131,12 @@ public class AnyChatCameraHelper implements SurfaceHolder.Callback {
                     if (data.length != 0 && bNeedCapture) {
                         try {
                             AnyChatCoreSDK.InputVideoData(data, data.length, 0);
+                            mCamera.addCallbackBuffer(data);
                         } catch (Exception e) {
 
                         }
                     }
-                    mCamera.addCallbackBuffer(data);
+
                 }
             });
             mCamera.startPreview(); // 打开预览画面

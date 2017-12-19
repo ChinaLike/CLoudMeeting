@@ -44,15 +44,15 @@ public class ConfigEntity {
     public boolean IsSaveNameAndPw;                            //是否保存用户名和密码
 
 
-    public int configMode = VIDEO_MODE_SERVERCONFIG;
+    public int configMode = VIDEO_MODE_CUSTOMCONFIG;
 //    public int configMode = 1;
     public int resolution_width = 0;
     public int resolution_height = 0;
 
     public int videoBitrate = 150 * 1000;                        // 本地视频码率
-    public int videoFps = 10;                                // 本地视频帧率
+    public int videoFps = 15;                                // 本地视频帧率
     public int videoQuality = VIDEO_QUALITY_GOOD;            //视频质量
-    public int videoPreset = 1;
+    public int videoPreset = 3;
     public int videoOverlay = 1;                            // 本地视频是否采用Overlay模式
     public int videorotatemode = 0;                            // 本地视频旋转模式
     public int fixcolordeviation = 0;                        // 修正本地视频采集偏色：0 关闭(默认）， 1 开启

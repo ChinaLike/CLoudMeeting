@@ -3,26 +3,30 @@ package com.tydic.cm;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
 import android.util.Log;
-import android.view.MotionEvent;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.bairuitech.anychat.AnyChatCoreSDK;
+import com.bairuitech.anychat.AnyChatDefine;
 import com.tydic.cm.adapter.SurfaceAdapter;
 import com.tydic.cm.base.BaseActivity;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
-import com.tydic.cm.model.inf.LocalHelper;
+import com.tydic.cm.helper.BannerHelper;
+import com.tydic.cm.helper.LocalViewHelper;
+import com.tydic.cm.helper.TimerHandler;
 import com.tydic.cm.model.inf.OnAudioStateChangeListener;
 import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnLocationListener;
 import com.tydic.cm.model.inf.OnRequestListener;
 import com.tydic.cm.model.inf.OnVideoStateChangeListener;
+import com.tydic.cm.overwrite.CarouselPop;
+import com.tydic.cm.overwrite.CustomGridManner;
 import com.tydic.cm.overwrite.LocationPop;
 import com.tydic.cm.overwrite.MeetingMenuPop;
 import com.tydic.cm.overwrite.MenuLayout;
@@ -39,20 +43,14 @@ import java.util.List;
 /**
  * 普通视频模式
  */
-public class CommonActivity extends BaseActivity implements View.OnClickListener, MenuLayout.MenuClickListener,
-        MeetingMenuPop.MenuClickListener, OnItemClickListener, OnLocationListener, LocalHelper {
+public class CommonActivity extends BaseActivity implements MenuLayout.MenuClickListener, LocalViewHelper,
+        MeetingMenuPop.MenuClickListener, OnItemClickListener, OnLocationListener, BannerHelper {
 
     private RelativeLayout rootView;
     /**
      * 远程视频显示
      */
     private RecyclerView recyclerView;
-    /**
-     * 本地视频显示
-     */
-    private SurfaceView selfSurface;
-
-    private FrameLayout localParent;
 
     private MenuLayout menuLayout;//功能菜单
 
@@ -76,22 +74,45 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      * 保存所有人员
      */
     private List<UsersBean> allUserList = new ArrayList<>();
+    /**
+     * 轮播
+     */
+    private CarouselPop carouselPop;
+    /**
+     * 列表管理器
+     */
+    private CustomGridManner manager;
+    /**
+     * 定时器
+     */
+    private TimerHandler mTimerHandler;
+
+    private RelativeLayout localParent;
+
+    private SurfaceView localChild;
+    /**
+     * 是否添加本地轮播视频
+     */
+    private boolean isAddLocalSurface = true;
 
 
     @Override
     protected void init(@Nullable Bundle savedInstanceState) {
+
         meetingMenuPop.setMenuClickListener(this);
         mOnlinePop = new OnlinePop(this, mJsParamsBean);
         mOnlinePop.onLineUser();
         mOnlinePop.setOnItemClickListener(this);
+        //视频轮播init
+        carouselPop = new CarouselPop(mContext);
+        carouselPop.setBannerHelper(this);
         //初始化控件
         initView();
         //通用配置
         initSurfaceSDK();
         //初始化适配器
-        initAdapter(showNum);
-        //初始化本地视频
-        initLocalSurface(selfSurface);
+        initAdapter(showNum, surfaceBeanList);
+
     }
 
     @Override
@@ -108,22 +129,12 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
     private void initView() {
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.addItemDecoration(new SimpleDividerItemDecoration(1, 0xFFFFFFFF));
-        selfSurface = (SurfaceView) findViewById(R.id.self_surface);
-        localParent = (FrameLayout) findViewById(R.id.local_parent);
         rootView = (RelativeLayout) findViewById(R.id.root);
-
         menuLayout = (MenuLayout) findViewById(R.id.menu_layout);
         menuLayout.setMenuClickListener(this);
-//        cameraStatus = (ImageView) findViewById(R.id.meeting_transcribe);
-//        cameraStatus.setOnClickListener(this);
-//        camera = (ImageView) findViewById(R.id.meeting_camera);
-//        camera.setOnClickListener(this);
-//        microphone = (ImageView) findViewById(R.id.meeting_microphone);
-//        microphone.setOnClickListener(this);
-//        sound = (ImageView) findViewById(R.id.meeting_sound);
-//        sound.setOnClickListener(this);
-//        menu = (ImageView) findViewById(R.id.meeting_menu);
-//        menu.setOnClickListener(this);
+
+        localParent = (RelativeLayout) findViewById(R.id.local_parent);
+        localChild = (SurfaceView) findViewById(R.id.local_child);
     }
 
     /**
@@ -131,16 +142,16 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      *
      * @param showCount
      */
-    private void initAdapter(int showCount) {
-        adapter = new SurfaceAdapter(mContext, surfaceBeanList);
+    private void initAdapter(int showCount, List<UsersBean> list) {
+        adapter = new SurfaceAdapter(mContext, list);
+        adapter.setLocalViewHelper(this);
         adapter.setSelfID(selfUserId);
         adapter.setAnychat(anychat);
         adapter.setColumn(showCount);
-        adapter.setLocalHelper(this);
-        GridLayoutManager manager = new GridLayoutManager(mContext, showCount);
+        manager = new CustomGridManner(mContext, showCount);
+        manager.setScrollEnabled(false);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
-
     }
 
     @Override
@@ -246,7 +257,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         }
                         surfaceBeanList.clear();
                         surfaceBeanList.add(bean);
-                        initAdapter(1);
+                        initAdapter(1, surfaceBeanList);
                         mOnlinePop.onLineUser();
                     }
                     break;
@@ -295,12 +306,22 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         //进入房间成功
         if (dwErrorCode == 0) {
             //打开本地音视频，初次进入先打开本地视频
-            anychat.UserCameraControl(-1, 1);
-            anychat.UserSpeakControl(-1, 1);
+//            if (userState.getVideoStatus().equals("1")) {
+//                anychat.UserCameraControl(-1, 0);
+//            } else if (userState.getVideoStatus().equals("2")) {
+//                anychat.UserCameraControl(-1, 1);
+//            }
+//            if (userState.getAudioStatus().equals("1")) {
+//                anychat.UserSpeakControl(-1, 0);
+//            } else if (userState.getAudioStatus().equals("2")) {
+//                anychat.UserSpeakControl(-1, 1);
+//            }
+            refreshCamera(userState.getVideoStatus());
+            refreshMic(userState.getAudioStatus());
             //更新一次本地状态
             feedbackState(Key.UPDATE_CLIENT_STATUS);
             //获取用户状态,更新本地按钮状态
-            mRetrofitMo.userState(mJsParamsBean.getRoomId(), mJsParamsBean.getFeedId(), this);
+//            mRetrofitMo.userState(mJsParamsBean.getRoomId(), mJsParamsBean.getFeedId(), this);
             //获取在线人员，适配界面数据
             mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), this);
         } else {
@@ -339,35 +360,37 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      */
     private void compareData(final int index, final UsersBean bean) {
         //此处获取用户信息，当用户信息获取完毕后刷新对应数据
-        final String userId = bean.getUserId();
         try {
-            //等待服务处理数据（因为服务器比anychat处理数据慢一点）
-            Thread.sleep(200);
+            Thread.sleep(300);
+            final String userId = bean.getUserId();
+            mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), new OnRequestListener() {
+                @Override
+                public void onSuccess(int type, Object obj) {
+                    List<UsersBean> list = (List<UsersBean>) obj;
+                    allUserList.clear();
+                    allUserList.addAll(list);
+                    //视频轮播init
+                    carouselPop.setUserBean(list);
+                    for (UsersBean item : list) {
+                        if (userId.equals(item.getUserId())) {
+                            bean.setNickName(item.getNickName());
+                            bean.setMeetingId(item.getMeetingId());
+                            bean.setYhyUserId(item.getYhyUserId());
+                            adapter.notifyItemChanged(index);
+                            break;
+                        }
+                    }
+                }
+
+                @Override
+                public void onError(int type, int code) {
+                    adapter.notifyItemChanged(index);
+                }
+            });
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        mRetrofitMo.onLineUsers(mJsParamsBean.getRoomId(), new OnRequestListener() {
-            @Override
-            public void onSuccess(int type, Object obj) {
-                List<UsersBean> list = (List<UsersBean>) obj;
-                allUserList.clear();
-                allUserList.addAll(list);
-                for (UsersBean item : list) {
-                    if (userId.equals(item.getUserId())) {
-                        bean.setNickName(item.getNickName());
-                        bean.setMeetingId(item.getMeetingId());
-                        bean.setYhyUserId(item.getYhyUserId());
-                        adapter.notifyItemChanged(index);
-                        break;
-                    }
-                }
-            }
 
-            @Override
-            public void onError(int type, int code) {
-                adapter.notifyItemChanged(index);
-            }
-        });
     }
 
     /**
@@ -452,6 +475,9 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         if (mOnlinePop != null && mOnlinePop.isShowing()) {
             mOnlinePop.dismiss();
         }
+        if (carouselPop != null && carouselPop.isShowing()) {
+            carouselPop.dismiss();
+        }
         finish();
     }
 
@@ -473,6 +499,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 surfaceBeanList.clear();
                 allUserList.clear();
                 allUserList.addAll((List<UsersBean>) obj);
+                carouselPop.setUserBean(allUserList);
                 UsersBean speaker = mUserMo.getSpeaker((List<UsersBean>) obj);
                 if (speaker != null) {
                     //已有主讲人
@@ -507,7 +534,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         }
                     }
                 }
-                resetAdapter(surfaceBeanList.size());
+                resetAdapter(surfaceBeanList.size(), surfaceBeanList);
             case Key.SEND_MESSAGE:
                 //发送消息
                 L.d(TAG, "发送信息：" + obj.toString());
@@ -522,7 +549,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
      *
      * @param size
      */
-    private void resetAdapter(int size) {
+    private void resetAdapter(int size, List<UsersBean> list) {
         if (size > 1 && size <= 4) {
             showNum = 2;
         } else if (size > 4 && size <= 6) {
@@ -532,7 +559,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
         } else {
             showNum = 1;
         }
-        initAdapter(showNum);
+        initAdapter(showNum, list);
     }
 
     @Override
@@ -570,6 +597,10 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                         }
                     }
                 });
+                //处理轮播
+                if (carouselPop.isCarousel()) {
+                    showLocal(userState.getVideoStatus() == Key.VIDEO_OPEN ? true : false);
+                }
                 break;
             case MenuLayout.TYPE_CAMERA:
                 //摄像头的前后转换
@@ -592,47 +623,13 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 //菜单键
                 meetingMenuPop.show(rootView);
                 break;
+            case MenuLayout.TYPE_USER:
+                //打开侧边弹窗
+                mOnlinePop.show(rootView);
+                break;
             default:
                 break;
         }
-    }
-
-    @Override
-    public void onClick(View view) {
-//        int id = view.getId();
-//
-//        if (id == R.id.meeting_transcribe) {
-//            //摄像头的状态，打开，关闭，无摄像头  0-无摄像头，1-有摄像头关闭，2-有摄像头打开
-//            video.changeCamera(cameraStatus, userState, new OnVideoStateChangeListener() {
-//                @Override
-//                public void videoStateChange() {
-//                    feedbackState(Key.UPDATE_CLIENT_STATUS);
-//                    if (getLocalBean() != null) {
-//                        getLocalBean().setVideoStatus(userState.getVideoStatus());
-//                        getLocalBean().setAudioStatus(userState.getAudioStatus());
-//                        adapter.notifyItemChanged(surfaceBeanList.indexOf(getLocalBean()));
-//                    }
-//                }
-//            });
-//        } else if (id == R.id.meeting_camera) {
-//            //摄像头的前后转换
-//            video.switchCamera();
-//        } else if (id == R.id.meeting_microphone) {
-//            //本地声音
-//            audio.changeLocal(microphone, userState, new OnAudioStateChangeListener() {
-//                @Override
-//                public void audioStateChange() {
-//                    feedbackState(Key.UPDATE_CLIENT_STATUS);
-//                }
-//            });
-//        } else if (id == R.id.meeting_sound) {
-//            //远程声音
-//            audio.changeDistance(sound);
-//        }
-//        if (id == R.id.meeting_menu) {
-//            //菜单键
-//            meetingMenuPop.show(rootView);
-//        }
     }
 
     @Override
@@ -645,6 +642,14 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 break;
             case 3:
                 finish();
+                break;
+            case 5:
+                if (!mUserMo.isHasSpeaker(allUserList)) {
+                    //mOnlinePop.onLineUser();
+                    carouselPop.show(rootView);
+                } else {
+                    T.showShort("当前为主讲人模式,不可设置视频轮播!");
+                }
                 break;
             default:
                 break;
@@ -694,7 +699,7 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
             if (newId != selfUserId) {
                 adapter.notifyItemChanged(newPos);
             } else {
-                initAdapter(showNum);
+                initAdapter(showNum, surfaceBeanList);
             }
         } else {
             //交换位置
@@ -722,24 +727,9 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
                 adapter.notifyItemChanged(newPos);
                 adapter.notifyItemChanged(oldPos);
             } else {
-                initAdapter(showNum);
+                initAdapter(showNum, surfaceBeanList);
             }
         }
-    }
-
-    /**
-     * 设置本地视频显示的位置
-     *
-     * @param position 第几个元素
-     * @param bean     参数
-     * @param width    视频的宽度
-     * @param height   视频的高度
-     * @param x        X轴移动的位置
-     * @param y        Y轴移动的位置
-     */
-    @Override
-    public void local(int position, UsersBean bean, int width, int height, int x, int y) {
-        localParent.removeView(selfSurface);
     }
 
     @Override
@@ -778,4 +768,115 @@ public class CommonActivity extends BaseActivity implements View.OnClickListener
 
     }
 
+    /**
+     * 视频轮播回调
+     *
+     * @param mode 轮播模式， 1-表示全屏轮播  2-表示非全屏且2为一组轮播  依次类推
+     * @param list 轮播参数，轮播时以此集合中参数进行轮播
+     */
+    @Override
+    public void banner(final int mode, final List<UsersBean> list) {
+        if (mode == -1) {
+            cancelBanner();
+            showLocal(false);
+        } else {
+
+            final int size = list == null ? 0 : list.size();
+            handleBannerData(list, mode);
+            //重置界面
+            resetAdapter(mode, list);
+            //关闭动画效果
+            closeDefaultAnimator();
+            showLocal(true);
+            mTimerHandler = new TimerHandler(mode, list) {
+                @Override
+                public void handleBanner(int page) {
+                    //判断集合中还存在人数比轮播人数少的时候，关闭轮播
+                    if (size <= mode) {
+                        cancelBanner();
+                        return;
+                    }
+                    //滚动到指定页面
+                    manager.scrollToPosition(mTimerHandler.getIndex(page));
+
+                }
+            };
+            mTimerHandler.start();
+        }
+    }
+
+    /**
+     * 轮播时显示本地视频
+     *
+     * @param show
+     */
+    private void showLocal(boolean show) {
+        if (show) {
+            if (!isAddLocalSurface) {
+                isAddLocalSurface = true;
+                localParent.addView(localChild);
+            }
+            // 视频如果是采用java采集
+            SurfaceHolder surfaceHolder = localChild.getHolder();
+            surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
+                surfaceHolder.addCallback(AnyChatCoreSDK.mCameraHelper);
+            }
+            //处理本地视频
+            if (userState.getVideoStatus().equals(Key.VIDEO_OPEN)) {
+                anychat.UserCameraControl(-1, 1);
+            } else {
+                anychat.UserCameraControl(-1, 0);
+            }
+        } else {
+            isAddLocalSurface = false;
+            localParent.removeView(localChild);
+        }
+    }
+
+    /**
+     * 处理轮播数据
+     *
+     * @param list
+     */
+    private void handleBannerData(List<UsersBean> list, int mode) {
+        int size = list.size();
+        for (int i = 0; i < mode - 1; i++) {
+            for (int j = 0; j < size; j++) {
+                list.add(list.get(j));
+            }
+        }
+    }
+
+    /**
+     * 取消轮播
+     */
+    private void cancelBanner() {
+        //停止计时器
+        if (mTimerHandler != null) {
+            mTimerHandler.stop();
+        }
+        //取消轮播
+        if (surfaceBeanList.size() > 1) {
+            resetAdapter(4, surfaceBeanList);
+        } else {
+            resetAdapter(1, surfaceBeanList);
+        }
+    }
+
+    /**
+     * 关闭默认局部刷新动画
+     */
+    public void closeDefaultAnimator() {
+        recyclerView.getItemAnimator().setAddDuration(0);
+        recyclerView.getItemAnimator().setChangeDuration(0);
+        recyclerView.getItemAnimator().setMoveDuration(0);
+        recyclerView.getItemAnimator().setRemoveDuration(0);
+        ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
+    }
+
+    @Override
+    public void removeView() {
+        // showLocal(false);
+    }
 }

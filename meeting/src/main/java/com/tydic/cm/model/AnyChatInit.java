@@ -227,9 +227,8 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
         anyChatCoreSDK.SetBaseEvent(this);//基本事件
         anyChatCoreSDK.SetObjectEvent(this);//营业厅排队事件
         anyChatCoreSDK.InitSDK(android.os.Build.VERSION.SDK_INT, 0);//初始化sdk
-
         AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, LOCALVIDEOAUTOROTATION);
-        AnyChatCoreSDK.SetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_AUTOROTATION, 1);
+        ApplyVideoConfig();
         anyChatCoreSDK.Connect(Config.mStrIP, Config.mSPort);
     }
 
@@ -274,7 +273,6 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
             CacheUtil.get(mContext).put(Key.ANYCHAT_USER_ID, dwUserId + "");
             if (loginCallBack != null) {
                 loginCallBack.success(dwUserId);
-                ApplyVideoConfig();
             }
         } else {
             if (loginCallBack != null) {
@@ -309,7 +307,7 @@ public class AnyChatInit implements AnyChatBaseEvent, AnyChatObjectEvent {
      * 根据配置文件配置视频参数
      */
     private void ApplyVideoConfig() {
-        ApplyVideoConfig(ScreenUtil.getScreenWidth(mContext)/2, ScreenUtil.getScreenHeight(mContext)/2);
+        ApplyVideoConfig(ScreenUtil.getScreenWidth(mContext), ScreenUtil.getScreenHeight(mContext));
     }
 
     /**

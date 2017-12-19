@@ -6,8 +6,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.tydic.cm.CommonActivity;
-import com.tydic.cm.OnLiveActivity;
+import com.tydic.cm.InitializeSettingsActivity;
 import com.tydic.cm.bean.JsParamsBean;
 import com.tydic.cm.constant.Key;
 import com.tydic.cm.util.CacheUtil;
@@ -52,12 +51,9 @@ public class JsAndroidModule extends ReactContextBaseJavaModule {
         bean.setIsBroadcastMode(isBroadcastMode + "");
         L.d("会议视频", "React-native传递过来的参数：" + bean.toString());
         Intent intent;
-        if (isBroadcastMode == 0) {
-            intent = new Intent(getCurrentActivity(), CommonActivity.class);
-        } else {
-            intent = new Intent(getCurrentActivity(), OnLiveActivity.class);
-        }
+        intent = new Intent(getCurrentActivity(), InitializeSettingsActivity.class);
         intent.putExtra(Key.JS_PARAMS, bean);
+        intent.putExtra("isBroadcastMode", isBroadcastMode);
         getCurrentActivity().startActivity(intent);
     }
 

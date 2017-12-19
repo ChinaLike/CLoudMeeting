@@ -36,8 +36,8 @@ public class SurfaceLayout extends RelativeLayout {
     private void init(Context context) {
 
         View view = LayoutInflater.from(context).inflate(R.layout.layout_surface_view, null, false);
-        hint = view.findViewById(R.id.hint_image);
-        mSurfaceView = view.findViewById(R.id.surface_item);
+        hint = (RelativeLayout) view.findViewById(R.id.hint_image);
+        mSurfaceView = (SurfaceView) view.findViewById(R.id.surface_item);
         addView(view);
     }
 }

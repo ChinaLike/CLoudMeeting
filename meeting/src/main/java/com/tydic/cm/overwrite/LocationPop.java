@@ -89,7 +89,7 @@ public class LocationPop extends RelativePopupWindow implements OnItemClickListe
 
     private void initView(int showNum) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.layout_location, null, false);
-        recyclerView = view.findViewById(R.id.location_recy);
+        recyclerView = (RecyclerView) view.findViewById(R.id.location_recy);
         List<String> list = new ArrayList<>();
         int clounm = 0;
         if (showNum == 0) {

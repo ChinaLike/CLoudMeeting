@@ -32,11 +32,12 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
     public static final int TYPE_MICROPHONE = 2;
     public static final int TYPE_SOUND = 3;
     public static final int TYPE_FUN = 4;
+    public static final int TYPE_USER = 5;
 
     /**
      * 按钮：摄像头开关，摄像头切换，麦克风开关，声音开关，底部会议功能键
      */
-    private ImageView meeting_transcribe, meeting_camera, meeting_microphone, meeting_sound, meeting_menu;
+    private ImageView meeting_transcribe, meeting_camera, meeting_microphone, meeting_sound, meeting_menu, meeting_user_list;
     /**
      * 底部、顶部父控件
      */
@@ -64,7 +65,7 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
         @Override
         public void run() {
             long currentTime = System.currentTimeMillis();
-            if (currentTime - touchTime > TIME && !isExit){
+            if (currentTime - touchTime > TIME && !isExit) {
                 endAnimation();
             }
         }
@@ -85,23 +86,25 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
         this.mContext = context;
         ConvertUtil.init(context);
         init(context);
-        mTimer.schedule(mTimerTask,500,1000);
+        mTimer.schedule(mTimerTask, 500, 1000);
     }
 
     private void init(Context context) {
         View view = LayoutInflater.from(context).inflate(R.layout.layout_menu, null, false);
-        meeting_transcribe = view.findViewById(R.id.meeting_transcribe);
+        meeting_transcribe = (ImageView) view.findViewById(R.id.meeting_transcribe);
         meeting_transcribe.setOnClickListener(this);
-        meeting_camera = view.findViewById(R.id.meeting_camera);
+        meeting_camera = (ImageView) view.findViewById(R.id.meeting_camera);
         meeting_camera.setOnClickListener(this);
-        meeting_microphone = view.findViewById(R.id.meeting_microphone);
+        meeting_microphone = (ImageView) view.findViewById(R.id.meeting_microphone);
         meeting_microphone.setOnClickListener(this);
-        meeting_sound = view.findViewById(R.id.meeting_sound);
+        meeting_sound = (ImageView) view.findViewById(R.id.meeting_sound);
         meeting_sound.setOnClickListener(this);
-        meeting_menu = view.findViewById(R.id.meeting_menu);
+        meeting_menu = (ImageView) view.findViewById(R.id.meeting_menu);
         meeting_menu.setOnClickListener(this);
-        bottom_menu = view.findViewById(R.id.bottom_menu);
-        top_menu = view.findViewById(R.id.top_menu);
+        bottom_menu = (RelativeLayout) view.findViewById(R.id.bottom_menu);
+        top_menu = (RelativeLayout) view.findViewById(R.id.top_menu);
+        meeting_user_list = (ImageView) view.findViewById(R.id.meeting_user_list);
+        meeting_user_list.setOnClickListener(this);
         addView(view);
     }
 
@@ -123,7 +126,7 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
         AnimatorSet set = new AnimatorSet();
         set.playTogether(
                 ObjectAnimator.ofFloat(top_menu, "translationY", -ConvertUtil.dp2px(60), 0),
-                ObjectAnimator.ofFloat(bottom_menu, "translationY", ConvertUtil.dp2px(60), 0)
+                ObjectAnimator.ofFloat(bottom_menu, "translationY", ConvertUtil.dp2px(110), 0)
 
         );
         set.setDuration(200).start();
@@ -133,13 +136,13 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
      * 退出动画
      */
     public void endAnimation() {
-        ((Activity)mContext).runOnUiThread(new Runnable() {
+        ((Activity) mContext).runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 isExit = true;
                 AnimatorSet set = new AnimatorSet();
                 set.playTogether(
-                        ObjectAnimator.ofFloat(top_menu, "translationY", 0, -ConvertUtil.dp2px(60)), ObjectAnimator.ofFloat(bottom_menu, "translationY", 0, ConvertUtil.dp2px(60))
+                        ObjectAnimator.ofFloat(top_menu, "translationY", 0, -ConvertUtil.dp2px(60)), ObjectAnimator.ofFloat(bottom_menu, "translationY", 0, ConvertUtil.dp2px(110))
                 );
                 set.setDuration(200).start();
             }
@@ -167,6 +170,8 @@ public class MenuLayout extends RelativeLayout implements View.OnClickListener {
             if (id == R.id.meeting_menu) {
                 //菜单键
                 menuClickListener.onMenuClick(TYPE_FUN, meeting_menu);
+            } else if (id == R.id.meeting_user_list) {
+                menuClickListener.onMenuClick(TYPE_USER, meeting_user_list);
             }
         }
     }

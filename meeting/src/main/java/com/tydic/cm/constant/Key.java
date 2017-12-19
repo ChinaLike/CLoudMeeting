@@ -52,5 +52,5 @@ public interface Key {
 
     String SPEAKER = "1";//是主讲人
     String NO_SPEAKER = "0";//不是主讲人
-
+    String IS_START = "IS_START";
 }

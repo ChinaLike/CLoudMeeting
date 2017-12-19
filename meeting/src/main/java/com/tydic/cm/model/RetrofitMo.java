@@ -128,30 +128,30 @@ public class RetrofitMo {
      * @param feedId
      * @param listener
      */
-    public void userState(int roomId, String feedId, final OnRequestListener listener) {
-        Call<BaseBean<UsersBean>> call = retrofit().getUserState(roomId + "", feedId);
-        call.enqueue(new Callback<BaseBean<UsersBean>>() {
-            @Override
-            public void onResponse(Call<BaseBean<UsersBean>> call, Response<BaseBean<UsersBean>> response) {
-                BaseBean<UsersBean> baseBean = response.body();
-                if (listener != null) {
-                    if (baseBean != null && baseBean.getData() != null) {
-                        listener.onSuccess(Key.USER_STATE, baseBean.getData());
-                    } else {
-                        listener.onError(Key.USER_STATE, Key.FAIL);
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<BaseBean<UsersBean>> call, Throwable t) {
-                if (listener != null) {
-                    listener.onError(Key.USER_STATE, Key.OVER_TIME);
-                }
-            }
-        });
-
-    }
+//    public void userState(int roomId, String feedId, final OnRequestListener listener) {
+//        Call<BaseBean<UsersBean>> call = retrofit().getUserState(roomId + "", feedId);
+//        call.enqueue(new Callback<BaseBean<UsersBean>>() {
+//            @Override
+//            public void onResponse(Call<BaseBean<UsersBean>> call, Response<BaseBean<UsersBean>> response) {
+//                BaseBean<UsersBean> baseBean = response.body();
+//                if (listener != null) {
+//                    if (baseBean != null && baseBean.getData() != null) {
+//                        listener.onSuccess(Key.USER_STATE, baseBean.getData());
+//                    } else {
+//                        listener.onError(Key.USER_STATE, Key.FAIL);
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<BaseBean<UsersBean>> call, Throwable t) {
+//                if (listener != null) {
+//                    listener.onError(Key.USER_STATE, Key.OVER_TIME);
+//                }
+//            }
+//        });
+//
+//    }
 
     /**
      * 向服务器发送消息

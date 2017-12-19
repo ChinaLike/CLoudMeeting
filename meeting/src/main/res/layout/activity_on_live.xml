@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:id="@+id/rootview"
     android:background="#000000"
+    android:orientation="vertical"
     tools:context="com.tydic.cm.OnLiveActivity">
 
     <ImageView
@@ -19,16 +19,28 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <ImageView
-        android:id="@+id/meeting_menu"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="15dp"
-        android:layout_marginBottom="15dp"
-        android:layout_marginRight="10dp"
-        android:src="@drawable/img_meeting_menu_button"
-        android:visibility="visible" />
+    <com.tydic.cm.overwrite.MenuLayout
+        android:id="@+id/menu_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    <!--<ImageView-->
+    <!--android:id="@+id/meeting_menu"-->
+    <!--android:layout_width="40dp"-->
+    <!--android:layout_height="40dp"-->
+    <!--android:layout_alignParentBottom="true"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_margin="15dp"-->
+    <!--android:layout_marginBottom="15dp"-->
+    <!--android:layout_marginRight="10dp"-->
+    <!--android:src="@drawable/img_meeting_menu_button"-->
+    <!--android:visibility="visible" />-->
 
+    <!--<ImageView-->
+    <!--android:id="@+id/meeting_user_list"-->
+    <!--android:layout_width="40dp"-->
+    <!--android:layout_height="40dp"-->
+    <!--android:layout_above="@+id/meeting_menu"-->
+    <!--android:layout_alignLeft="@+id/meeting_menu"-->
+    <!--android:layout_alignStart="@+id/meeting_menu"-->
+    <!--android:src="@drawable/img_meeting_user_list" />-->
 </RelativeLayout>

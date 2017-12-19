@@ -10,20 +10,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <FrameLayout
-        android:id="@+id/local_parent"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <SurfaceView
-            android:id="@+id/self_surface"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </FrameLayout>
-
     <com.tydic.cm.overwrite.MenuLayout
         android:id="@+id/menu_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
+
+    <RelativeLayout
+        android:id="@+id/local_parent"
+        android:layout_width="0.1dp"
+        android:layout_height="0.1dp">
+
+        <SurfaceView
+            android:id="@+id/local_child"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </RelativeLayout>
 
 </RelativeLayout>

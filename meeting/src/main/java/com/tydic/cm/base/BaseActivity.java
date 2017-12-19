@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -101,6 +99,8 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
 
     //权限组
     private String[] permissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
+    private String getVideoStatus;
+    private String getAudioStatus;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -109,6 +109,10 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         mJsParamsBean = (JsParamsBean) getIntent().getSerializableExtra(Key.JS_PARAMS);
         setContentView(setLayout());
         mContext = this;
+        getVideoStatus = getIntent().getStringExtra("getVideoStatus");
+        getAudioStatus = getIntent().getStringExtra("getAudioStatus");
+        userState.setVideoStatus(getVideoStatus);
+        userState.setAudioStatus(getAudioStatus);
         init();
         init(savedInstanceState);
 
@@ -248,19 +252,6 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
         }
     }
 
-    /**
-     * 初始化本地
-     *
-     * @param selfSurface
-     */
-    protected void initLocalSurface(SurfaceView selfSurface) {
-        // 视频如果是采用java采集
-        selfSurface.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        if (AnyChatCoreSDK.GetSDKOptionInt(AnyChatDefine.BRAC_SO_LOCALVIDEO_CAPDRIVER) == AnyChatDefine.VIDEOCAP_DRIVER_JAVA) {
-            selfSurface.getHolder().addCallback(AnyChatCoreSDK.mCameraHelper);
-        }
-    }
-
     @Override
     public void OnAnyChatConnectMessage(boolean bSuccess) {
         if (!bSuccess) {
@@ -320,8 +311,8 @@ public abstract class BaseActivity extends AppCompatActivity implements AnyChatI
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (anychat!= null){
-            anychat.UserCameraControl(-1,0);
+        if (anychat != null) {
+            anychat.UserCameraControl(-1, 0);
         }
         mAnyChatInit.onDestroy();
     }
