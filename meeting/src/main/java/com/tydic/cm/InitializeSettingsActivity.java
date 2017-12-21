@@ -12,8 +12,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.tydic.cm.bean.JsParamsBean;
+import com.tydic.cm.bean.VideoLayoutParamsBean;
 import com.tydic.cm.constant.Key;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Created by yufeng on 2017/12/7.
@@ -36,6 +42,7 @@ public class InitializeSettingsActivity extends AppCompatActivity implements Vie
 
     private Drawable micDrawableClose;
     private Drawable micDrawableOpen;
+    private VideoLayoutParamsBean videoLayoutParamsBean;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,6 +62,7 @@ public class InitializeSettingsActivity extends AppCompatActivity implements Vie
         initImage();
         isOpenCamera();
         isOpenSound();
+        getLayoutJsonFileFromAssets();
     }
 
     /**
@@ -141,4 +149,21 @@ public class InitializeSettingsActivity extends AppCompatActivity implements Vie
         }
     }
 
+
+    private void getLayoutJsonFileFromAssets() {
+        try {
+            InputStreamReader inputStreamReader = new InputStreamReader(
+                    this.getClass().getClassLoader().getResourceAsStream("assets/" + "VideoConfig.json"));
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            String sLine;
+            StringBuilder stringBuilder = new StringBuilder();
+            while ((sLine = bufferedReader.readLine()) != null) {
+                stringBuilder.append(sLine);
+            }
+            Gson gson = new Gson();
+            videoLayoutParamsBean = gson.fromJson(stringBuilder.toString(), VideoLayoutParamsBean.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

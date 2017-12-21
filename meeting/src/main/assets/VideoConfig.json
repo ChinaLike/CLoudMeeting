@@ -1,0 +1,77 @@
+﻿{
+  "id": 1,
+  "name": "默认视频配置",
+  "defaultLayoutID": 2,
+  "layoutConfigList": [
+    {
+      "id": 1,
+      "name": "全屏式布局",
+      "displayCount": 1,
+      "cellInfoList": [
+        {
+          "id": 1,
+          "top": 0.0,
+          "left": 0.0,
+          "width": 1.0,
+          "height": 1.0,
+          "fullscreenLayoutID": 0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "6格式布局",
+      "displayCount": 6,
+      "cellInfoList": [
+        {
+          "id": 1,
+          "top": 0.0,
+          "left": 0.0,
+          "width": 0.66,
+          "height": 0.66,
+          "fullscreenLayoutID": 1
+        },
+        {
+          "id": 2,
+          "top": 0.0,
+          "left": 0.67,
+          "width": 0.34,
+          "height": 0.33,
+          "fullscreenLayoutID": 0
+        },
+        {
+          "id": 3,
+          "top": 0.33,
+          "left": 0.67,
+          "width": 0.34,
+          "height": 0.33,
+          "fullscreenLayoutID": 0
+        },
+        {
+          "id": 4,
+          "top": 0.67,
+          "left": 0.0,
+          "width": 0.33,
+          "height": 0.33,
+          "fullscreenLayoutID": 0
+        },
+        {
+          "id": 5,
+          "top": 0.67,
+          "left": 0.34,
+          "width": 0.33,
+          "height": 0.33,
+          "fullscreenLayoutID": 0
+        },
+        {
+          "id": 6,
+          "top": 0.67,
+          "left": 0.67,
+          "width": 0.33,
+          "height": 0.33,
+          "fullscreenLayoutID": 0
+        }
+      ]
+    }
+  ]
+}
