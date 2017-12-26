@@ -13,6 +13,8 @@ import android.widget.RelativeLayout;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
+import com.felipecsl.asymmetricgridview.AsymmetricRecyclerView;
+import com.felipecsl.asymmetricgridview.AsymmetricRecyclerViewAdapter;
 import com.tydic.cm.adapter.SurfaceAdapter;
 import com.tydic.cm.base.BaseActivity;
 import com.tydic.cm.bean.UsersBean;
@@ -20,6 +22,7 @@ import com.tydic.cm.constant.Key;
 import com.tydic.cm.helper.BannerHelper;
 import com.tydic.cm.helper.LocalViewHelper;
 import com.tydic.cm.helper.TimerHandler;
+import com.tydic.cm.model.LayoutConfig;
 import com.tydic.cm.model.inf.OnAudioStateChangeListener;
 import com.tydic.cm.model.inf.OnItemClickListener;
 import com.tydic.cm.model.inf.OnLocationListener;
@@ -50,7 +53,7 @@ public class CommonActivity extends BaseActivity implements MenuLayout.MenuClick
     /**
      * 远程视频显示
      */
-    private RecyclerView recyclerView;
+    private AsymmetricRecyclerView recyclerView;
 
     private MenuLayout menuLayout;//功能菜单
 
@@ -95,6 +98,8 @@ public class CommonActivity extends BaseActivity implements MenuLayout.MenuClick
      */
     private boolean isAddLocalSurface = true;
 
+    private LayoutConfig mLayoutConfig;
+
 
     @Override
     protected void init(@Nullable Bundle savedInstanceState) {
@@ -106,6 +111,8 @@ public class CommonActivity extends BaseActivity implements MenuLayout.MenuClick
         //视频轮播init
         carouselPop = new CarouselPop(mContext);
         carouselPop.setBannerHelper(this);
+        //初始化布局配置文件
+        mLayoutConfig = new LayoutConfig(InitializeSettingsActivity.surfaceConfig);
         //初始化控件
         initView();
         //通用配置
@@ -127,7 +134,7 @@ public class CommonActivity extends BaseActivity implements MenuLayout.MenuClick
      * 初始化视图
      */
     private void initView() {
-        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        recyclerView = (AsymmetricRecyclerView) findViewById(R.id.recyclerView);
         recyclerView.addItemDecoration(new SimpleDividerItemDecoration(1, 0xFFFFFFFF));
         rootView = (RelativeLayout) findViewById(R.id.root);
         menuLayout = (MenuLayout) findViewById(R.id.menu_layout);
@@ -143,15 +150,18 @@ public class CommonActivity extends BaseActivity implements MenuLayout.MenuClick
      * @param showCount
      */
     private void initAdapter(int showCount, List<UsersBean> list) {
-        adapter = new SurfaceAdapter(mContext, list);
+        adapter = new SurfaceAdapter(mContext, list,mLayoutConfig.layout());
         adapter.setLocalViewHelper(this);
         adapter.setSelfID(selfUserId);
         adapter.setAnychat(anychat);
         adapter.setColumn(showCount);
-        manager = new CustomGridManner(mContext, showCount);
-        manager.setScrollEnabled(false);
-        recyclerView.setLayoutManager(manager);
-        recyclerView.setAdapter(adapter);
+        recyclerView.setRequestedColumnCount(mLayoutConfig.getColumnCount());
+        AsymmetricRecyclerViewAdapter viewAdapter = new AsymmetricRecyclerViewAdapter(this,recyclerView,adapter);
+        recyclerView.setAdapter(viewAdapter);
+//        manager = new CustomGridManner(mContext, showCount);
+//        manager.setScrollEnabled(false);
+//        recyclerView.setLayoutManager(manager);
+//        recyclerView.setAdapter(adapter);
     }
 
     @Override

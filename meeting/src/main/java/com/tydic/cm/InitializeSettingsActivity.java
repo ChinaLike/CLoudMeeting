@@ -39,7 +39,7 @@ public class InitializeSettingsActivity extends AppCompatActivity implements Vie
     private Drawable micDrawableClose;
     private Drawable micDrawableOpen;
 
-    private SurfaceConfig surfaceConfig;
+    public static SurfaceConfig surfaceConfig;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

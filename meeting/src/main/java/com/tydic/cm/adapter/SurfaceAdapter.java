@@ -13,7 +13,11 @@ import android.widget.TextView;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
+import com.felipecsl.asymmetricgridview.AGVRecyclerViewAdapter;
+import com.felipecsl.asymmetricgridview.AsymmetricItem;
 import com.tydic.cm.R;
+import com.tydic.cm.bean.LocalBean;
+import com.tydic.cm.bean.SurfaceConfig;
 import com.tydic.cm.bean.UsersBean;
 import com.tydic.cm.constant.Key;
 import com.tydic.cm.helper.LocalViewHelper;
@@ -27,7 +31,7 @@ import java.util.List;
  * Created by like on 2017-09-26
  */
 
-public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceViewHolder> {
+public class SurfaceAdapter extends AGVRecyclerViewAdapter<SurfaceAdapter.SurfaceViewHolder> {
 
     private Context mContext;
 
@@ -48,10 +52,15 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
     private int selfID;
 
     private LocalViewHelper localViewHelper;
+    /**
+     * 布局文件配置
+     */
+    private List<LocalBean> local;
 
-    public SurfaceAdapter(Context mContext, List<UsersBean> mList) {
+    public SurfaceAdapter(Context mContext, List<UsersBean> mList,List<LocalBean> local) {
         this.mContext = mContext;
         this.mList = mList;
+        this.local = local;
     }
 
     @Override
@@ -276,6 +285,11 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
         }
     }
 
+    @Override
+    public AsymmetricItem getItem(int position) {
+        return local.get(position);
+    }
+
     class SurfaceViewHolder extends RecyclerView.ViewHolder {
 
         RelativeLayout parent;
@@ -302,4 +316,5 @@ public class SurfaceAdapter extends RecyclerView.Adapter<SurfaceAdapter.SurfaceV
     public int getHeight() {
         return height;
     }
+
 }
