@@ -2,6 +2,7 @@ package com.tydic.cm.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -71,10 +72,17 @@ public class SurfaceAdapter extends AGVRecyclerViewAdapter<SurfaceAdapter.Surfac
     @Override
     public void onBindViewHolder(SurfaceViewHolder holder, int position) {
         UsersBean bean = mList.get(position);
-        holder.parent.setLayoutParams(params);
+      //  holder.parent.setLayoutParams(params);
+        initSize(holder.parent,local.get(position),holder.surfaceLayout);
         nickName(holder.tvName, bean);
         videoControl(holder.surfaceLayout, holder.camera_img, holder.parent, bean);
         audioControl(bean);
+    }
+
+    private void initSize(RelativeLayout parent , LocalBean bean,SurfaceView surfaceView){
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(bean.getWidth(),bean.getHeight());
+        parent.setLayoutParams(params);
+        surfaceView.setLayoutParams(params);
     }
 
     /**
@@ -129,7 +137,7 @@ public class SurfaceAdapter extends AGVRecyclerViewAdapter<SurfaceAdapter.Surfac
         } else if (videoStatus.equals(Key.VIDEO_CLOSE) && isValid) {
             //关闭视频
             closeCamera(bean);//先关闭摄像头释放资源
-            surfaceView.setVisibility(View.GONE);
+            surfaceView.setVisibility(View.INVISIBLE);
             imageView.setVisibility(View.VISIBLE);
             imageView.setImageResource(R.drawable.shut_camera);//设置关闭摄像头标志
             layout.setBackgroundColor(0xFF12182d);//设置背景颜色
@@ -137,7 +145,7 @@ public class SurfaceAdapter extends AGVRecyclerViewAdapter<SurfaceAdapter.Surfac
         } else if (videoStatus.equals(Key.VIDEO_NO) && isValid) {
             //没有摄像头
             closeCamera(bean);//先关闭摄像头释放资源
-            surfaceView.setVisibility(View.GONE);
+            surfaceView.setVisibility(View.INVISIBLE);
             imageView.setVisibility(View.VISIBLE);
             imageView.setImageResource(R.drawable.shut_camera);//设置没有摄像头标志
             layout.setBackgroundColor(0xFF12182d);//设置背景颜色
@@ -145,7 +153,7 @@ public class SurfaceAdapter extends AGVRecyclerViewAdapter<SurfaceAdapter.Surfac
         } else {
             //对视频不处理
             closeCamera(bean);//先关闭摄像头释放资源
-            surfaceView.setVisibility(View.GONE);
+            surfaceView.setVisibility(View.INVISIBLE);
             imageView.setVisibility(View.GONE);
             layout.setBackgroundColor(0xFF1F232E);
             //   anychat.UserCameraControl(-1, 0);//本地流停止上传

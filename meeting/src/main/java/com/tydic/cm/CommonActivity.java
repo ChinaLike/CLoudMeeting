@@ -112,7 +112,7 @@ public class CommonActivity extends BaseActivity implements MenuLayout.MenuClick
         carouselPop = new CarouselPop(mContext);
         carouselPop.setBannerHelper(this);
         //初始化布局配置文件
-        mLayoutConfig = new LayoutConfig(InitializeSettingsActivity.surfaceConfig);
+        mLayoutConfig = new LayoutConfig(InitializeSettingsActivity.surfaceConfig,this);
         //初始化控件
         initView();
         //通用配置

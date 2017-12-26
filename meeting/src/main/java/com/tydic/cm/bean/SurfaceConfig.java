@@ -68,6 +68,11 @@ public class SurfaceConfig {
         private int displayCount;
         private int rowCount;
         private int columnCount;
+
+        private int dividerWidth;//分割线宽度
+
+        private String dividerColor;//分割线颜色
+
         private List<CellInfoListBean> cellInfoList;
 
         public int getId() {
@@ -116,6 +121,28 @@ public class SurfaceConfig {
 
         public void setCellInfoList(List<CellInfoListBean> cellInfoList) {
             this.cellInfoList = cellInfoList;
+        }
+
+        public int getDividerWidth() {
+            if (dividerWidth == 0){
+                return 1;
+            }
+            return dividerWidth;
+        }
+
+        public void setDividerWidth(int dividerWidth) {
+            this.dividerWidth = dividerWidth;
+        }
+
+        public String getDividerColor() {
+            if (dividerColor == null || "".equals(dividerColor)){
+                return "#FF000000";
+            }
+            return dividerColor;
+        }
+
+        public void setDividerColor(String dividerColor) {
+            this.dividerColor = dividerColor;
         }
 
         public static class CellInfoListBean {

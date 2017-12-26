@@ -23,6 +23,14 @@ public class LocalBean implements AsymmetricItem {
      * item的下标
      */
     private int position;
+    /**
+     * item的宽度
+     */
+    private int width;
+    /**
+     * item的高度
+     */
+    private int height;
 
     public LocalBean() {
         this(1, 1, 0);
@@ -51,6 +59,22 @@ public class LocalBean implements AsymmetricItem {
 
     public int getPosition() {
         return position;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
     }
 
     @Override
