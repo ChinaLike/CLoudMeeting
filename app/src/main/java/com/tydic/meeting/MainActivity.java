@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.tydic.cm.CommonActivity;
+import com.tydic.cm.InitializeSettingsActivity;
 import com.tydic.cm.OnLiveActivity;
 import com.tydic.cm.bean.JsParamsBean;
 import com.tydic.cm.constant.Key;
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 bean.setInitiator("c254e80bae1247c499a08cb2807e447d");
                 bean.setCreated_by("c254e80bae1247c499a08cb2807e447d");
                 bean.setIsBroadcastMode("0");
-                Intent intent = new Intent(MainActivity.this, CommonActivity.class);
+                Intent intent = new Intent(MainActivity.this, InitializeSettingsActivity.class);
                 intent.putExtra(Key.JS_PARAMS, bean);
                 startActivity(intent);
             }

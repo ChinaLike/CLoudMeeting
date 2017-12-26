@@ -3,16 +3,17 @@ package com.tydic.cm.bean;
 import java.util.List;
 
 /**
- * Created by yufeng on 2017/12/20.
+ * 界面配置文件
+ * Created by like on 2017/12/26.
  */
 
-public class VideoLayoutParamsBean {
+public class SurfaceConfig {
 
     /**
      * id : 1
      * name : 默认视频配置
      * defaultLayoutID : 2
-     * layoutConfigList : [{"id":1,"name":"全屏式布局","displayCount":1,"cellInfoList":[{"id":1,"top":0,"left":0,"width":1,"height":1,"fullscreenLayoutID":0}]},{"id":2,"name":"6格式布局","displayCount":6,"cellInfoList":[{"id":1,"top":0,"left":0,"width":0.66,"height":0.66,"fullscreenLayoutID":1},{"id":2,"top":0,"left":0.67,"width":0.34,"height":0.33,"fullscreenLayoutID":0},{"id":3,"top":0.33,"left":0.67,"width":0.34,"height":0.33,"fullscreenLayoutID":0},{"id":4,"top":0.67,"left":0,"width":0.33,"height":0.33,"fullscreenLayoutID":0},{"id":5,"top":0.67,"left":0.34,"width":0.33,"height":0.33,"fullscreenLayoutID":0},{"id":6,"top":0.67,"left":0.67,"width":0.33,"height":0.33,"fullscreenLayoutID":0}]}]
+     * layoutConfigList : [{"id":1,"name":"全屏式布局","displayCount":1,"rowCount":1,"columnCount":1,"cellInfoList":[{"id":1,"top":0,"left":0,"width":1,"height":1,"fullscreenLayoutID":0,"rowIndex":0,"columnIndex":0,"rowSpan":1,"columnSpan":1}]},{"id":2,"name":"6格式布局","displayCount":6,"rowCount":3,"columnCount":3,"cellInfoList":[{"id":1,"top":0,"left":0,"width":0.67,"height":0.67,"fullscreenLayoutID":1,"rowIndex":0,"columnIndex":0,"rowSpan":2,"columnSpan":2},{"id":2,"top":0,"left":0.67,"width":0.33,"height":0.33,"fullscreenLayoutID":0,"rowIndex":0,"columnIndex":2,"rowSpan":1,"columnSpan":1},{"id":3,"top":0.33,"left":0.67,"width":0.33,"height":0.34,"fullscreenLayoutID":0,"rowIndex":1,"columnIndex":2,"rowSpan":1,"columnSpan":1},{"id":4,"top":0.67,"left":0,"width":0.34,"height":0.33,"fullscreenLayoutID":0,"rowIndex":2,"columnIndex":0,"rowSpan":1,"columnSpan":1},{"id":5,"top":0.67,"left":0.34,"width":0.33,"height":0.33,"fullscreenLayoutID":0,"rowIndex":2,"columnIndex":1,"rowSpan":1,"columnSpan":1},{"id":6,"top":0.67,"left":0.67,"width":0.33,"height":0.33,"fullscreenLayoutID":0,"rowIndex":2,"columnIndex":2,"rowSpan":1,"columnSpan":1}]}]
      */
 
     private int id;
@@ -57,12 +58,16 @@ public class VideoLayoutParamsBean {
          * id : 1
          * name : 全屏式布局
          * displayCount : 1
-         * cellInfoList : [{"id":1,"top":0,"left":0,"width":1,"height":1,"fullscreenLayoutID":0}]
+         * rowCount : 1
+         * columnCount : 1
+         * cellInfoList : [{"id":1,"top":0,"left":0,"width":1,"height":1,"fullscreenLayoutID":0,"rowIndex":0,"columnIndex":0,"rowSpan":1,"columnSpan":1}]
          */
 
         private int id;
         private String name;
         private int displayCount;
+        private int rowCount;
+        private int columnCount;
         private List<CellInfoListBean> cellInfoList;
 
         public int getId() {
@@ -89,6 +94,22 @@ public class VideoLayoutParamsBean {
             this.displayCount = displayCount;
         }
 
+        public int getRowCount() {
+            return rowCount;
+        }
+
+        public void setRowCount(int rowCount) {
+            this.rowCount = rowCount;
+        }
+
+        public int getColumnCount() {
+            return columnCount;
+        }
+
+        public void setColumnCount(int columnCount) {
+            this.columnCount = columnCount;
+        }
+
         public List<CellInfoListBean> getCellInfoList() {
             return cellInfoList;
         }
@@ -105,6 +126,10 @@ public class VideoLayoutParamsBean {
              * width : 1.0
              * height : 1.0
              * fullscreenLayoutID : 0
+             * rowIndex : 0
+             * columnIndex : 0
+             * rowSpan : 1
+             * columnSpan : 1
              */
 
             private int id;
@@ -113,6 +138,10 @@ public class VideoLayoutParamsBean {
             private double width;
             private double height;
             private int fullscreenLayoutID;
+            private int rowIndex;
+            private int columnIndex;
+            private int rowSpan;
+            private int columnSpan;
 
             public int getId() {
                 return id;
@@ -160,6 +189,38 @@ public class VideoLayoutParamsBean {
 
             public void setFullscreenLayoutID(int fullscreenLayoutID) {
                 this.fullscreenLayoutID = fullscreenLayoutID;
+            }
+
+            public int getRowIndex() {
+                return rowIndex;
+            }
+
+            public void setRowIndex(int rowIndex) {
+                this.rowIndex = rowIndex;
+            }
+
+            public int getColumnIndex() {
+                return columnIndex;
+            }
+
+            public void setColumnIndex(int columnIndex) {
+                this.columnIndex = columnIndex;
+            }
+
+            public int getRowSpan() {
+                return rowSpan;
+            }
+
+            public void setRowSpan(int rowSpan) {
+                this.rowSpan = rowSpan;
+            }
+
+            public int getColumnSpan() {
+                return columnSpan;
+            }
+
+            public void setColumnSpan(int columnSpan) {
+                this.columnSpan = columnSpan;
             }
         }
     }
