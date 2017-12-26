@@ -7,6 +7,8 @@
       "id": 1,
       "name": "全屏式布局",
       "displayCount": 1,
+      "rowCount": 1,
+      "columnCount": 1,
       "cellInfoList": [
         {
           "id": 1,
@@ -14,7 +16,11 @@
           "left": 0.0,
           "width": 1.0,
           "height": 1.0,
-          "fullscreenLayoutID": 0
+          "fullscreenLayoutID": 0,
+          "rowIndex": 0,
+          "columnIndex": 0,
+          "rowSpan": 1,
+          "columnSpan": 1
         }
       ]
     },
@@ -22,38 +28,56 @@
       "id": 2,
       "name": "6格式布局",
       "displayCount": 6,
+      "rowCount": 3,
+      "columnCount": 3,
       "cellInfoList": [
         {
           "id": 1,
           "top": 0.0,
           "left": 0.0,
-          "width": 0.66,
-          "height": 0.66,
-          "fullscreenLayoutID": 1
+          "width": 0.67,
+          "height": 0.67,
+          "fullscreenLayoutID": 1,
+          "rowIndex": 0,
+          "columnIndex": 0,
+          "rowSpan": 2,
+          "columnSpan": 2
         },
         {
           "id": 2,
           "top": 0.0,
           "left": 0.67,
-          "width": 0.34,
+          "width": 0.33,
           "height": 0.33,
-          "fullscreenLayoutID": 0
+          "fullscreenLayoutID": 0,
+          "rowIndex": 0,
+          "columnIndex": 2,
+          "rowSpan": 1,
+          "columnSpan": 1
         },
         {
           "id": 3,
           "top": 0.33,
           "left": 0.67,
-          "width": 0.34,
-          "height": 0.33,
-          "fullscreenLayoutID": 0
+          "width": 0.33,
+          "height": 0.34,
+          "fullscreenLayoutID": 0,
+          "rowIndex": 1,
+          "columnIndex": 2,
+          "rowSpan": 1,
+          "columnSpan": 1
         },
         {
           "id": 4,
           "top": 0.67,
           "left": 0.0,
-          "width": 0.33,
+          "width": 0.34,
           "height": 0.33,
-          "fullscreenLayoutID": 0
+          "fullscreenLayoutID": 0,
+          "rowIndex": 2,
+          "columnIndex": 0,
+          "rowSpan": 1,
+          "columnSpan": 1
         },
         {
           "id": 5,
@@ -61,7 +85,11 @@
           "left": 0.34,
           "width": 0.33,
           "height": 0.33,
-          "fullscreenLayoutID": 0
+          "fullscreenLayoutID": 0,
+          "rowIndex": 2,
+          "columnIndex": 1,
+          "rowSpan": 1,
+          "columnSpan": 1
         },
         {
           "id": 6,
@@ -69,7 +97,11 @@
           "left": 0.67,
           "width": 0.33,
           "height": 0.33,
-          "fullscreenLayoutID": 0
+          "fullscreenLayoutID": 0,
+          "rowIndex": 2,
+          "columnIndex": 2,
+          "rowSpan": 1,
+          "columnSpan": 1
         }
       ]
     }
