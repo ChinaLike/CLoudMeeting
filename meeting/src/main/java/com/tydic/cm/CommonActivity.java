@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 
 import com.bairuitech.anychat.AnyChatCoreSDK;
 import com.bairuitech.anychat.AnyChatDefine;
+import com.felipecsl.SpacesItemDecoration;
 import com.felipecsl.asymmetricgridview.AsymmetricRecyclerView;
 import com.felipecsl.asymmetricgridview.AsymmetricRecyclerViewAdapter;
 import com.tydic.cm.adapter.SurfaceAdapter;
@@ -37,6 +38,7 @@ import com.tydic.cm.overwrite.OnlinePop;
 import com.tydic.cm.overwrite.SimpleDividerItemDecoration;
 import com.tydic.cm.util.CollectionsUtil;
 import com.tydic.cm.util.L;
+import com.tydic.cm.util.ScreenUtil;
 import com.tydic.cm.util.T;
 
 import java.io.UnsupportedEncodingException;
@@ -156,6 +158,12 @@ public class CommonActivity extends BaseActivity implements MenuLayout.MenuClick
         adapter.setAnychat(anychat);
         adapter.setColumn(showCount);
         recyclerView.setRequestedColumnCount(mLayoutConfig.getColumnCount());
+        //不能滚动
+        recyclerView.setScrollEnabled(false);
+//        recyclerView.setRequestedHorizontalSpacing(ScreenUtil.getScreenWidth(this));
+//
+//        recyclerView.addItemDecoration(
+//                new SpacesItemDecoration(5));
         AsymmetricRecyclerViewAdapter viewAdapter = new AsymmetricRecyclerViewAdapter(this,recyclerView,adapter);
         recyclerView.setAdapter(viewAdapter);
 //        manager = new CustomGridManner(mContext, showCount);
