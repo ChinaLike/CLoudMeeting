@@ -1,6 +1,7 @@
 package com.tydic.cm;
 
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -160,11 +161,12 @@ public class CommonActivity extends BaseActivity implements MenuLayout.MenuClick
         recyclerView.setRequestedColumnCount(mLayoutConfig.getColumnCount());
         //不能滚动
         recyclerView.setScrollEnabled(false);
-//        recyclerView.setRequestedHorizontalSpacing(ScreenUtil.getScreenWidth(this));
+       // recyclerView.setRequestedHorizontalSpacing(ScreenUtil.getScreenWidth(this));
 //
 //        recyclerView.addItemDecoration(
-//                new SpacesItemDecoration(5));
+//                new SpacesItemDecoration(2));
         AsymmetricRecyclerViewAdapter viewAdapter = new AsymmetricRecyclerViewAdapter(this,recyclerView,adapter);
+        viewAdapter.setDevider(mLayoutConfig.getDeviderWidth(), mLayoutConfig.getDevideColor());
         recyclerView.setAdapter(viewAdapter);
 //        manager = new CustomGridManner(mContext, showCount);
 //        manager.setScrollEnabled(false);
@@ -533,7 +535,7 @@ public class CommonActivity extends BaseActivity implements MenuLayout.MenuClick
                 } else {
                     //当前实际进入房间数量
                     int currSize = ((List<UsersBean>) obj).size();
-                    for (int i = 0; i < MAX_VIDEO_SHOW_NUMBER; i++) {
+                    for (int i = 0; i < mLayoutConfig.getDisplayCount(); i++) {
                         if (i < currSize) {
                             UsersBean usersBean = ((List<UsersBean>) obj).get(i);
                             if (Integer.parseInt(usersBean.getUserId()) == selfUserId) {

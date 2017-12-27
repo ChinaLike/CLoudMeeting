@@ -136,7 +136,7 @@ public class SurfaceConfig {
 
         public String getDividerColor() {
             if (dividerColor == null || "".equals(dividerColor)){
-                return "#FF000000";
+                return "#FFFFFFFF";
             }
             return dividerColor;
         }

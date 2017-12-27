@@ -103,6 +103,14 @@ public class LayoutConfig {
     }
 
     /**
+     * 获取界面显示网格个数
+     * @return
+     */
+    public int getDisplayCount(){
+        return config.getDisplayCount();
+    }
+
+    /**
      * 获取布局的每一个视图
      */
     private void getLayoutView() {

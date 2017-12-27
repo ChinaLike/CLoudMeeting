@@ -40,6 +40,7 @@ public class AsymmetricRecyclerView extends RecyclerView implements AsymmetricVi
 
     /**
      * 是否可以滚动
+     *
      * @param isScrollEnabled
      */
     public void setScrollEnabled(boolean isScrollEnabled) {

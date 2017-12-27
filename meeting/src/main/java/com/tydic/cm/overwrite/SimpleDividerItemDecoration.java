@@ -76,7 +76,7 @@ public class SimpleDividerItemDecoration extends RecyclerView.ItemDecoration {
     public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
         if (mDivider != null) {
             drawHorizontal(c, parent);
-            drawVertical(c, parent);
+           // drawVertical(c, parent);
         }
     }
 

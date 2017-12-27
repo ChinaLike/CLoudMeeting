@@ -1,6 +1,7 @@
 package com.felipecsl.asymmetricgridview;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
@@ -59,5 +60,13 @@ public final class AsymmetricRecyclerViewAdapter<T extends RecyclerView.ViewHold
 
   void recalculateItemsPerRow() {
     adapterImpl.recalculateItemsPerRow();
+  }
+
+  public void setDevider(int width){
+    setDevider(width, Color.WHITE);
+  }
+
+  public void setDevider(int width , int color){
+    adapterImpl.setDevider(color,width);
   }
 }
